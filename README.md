@@ -1,4 +1,4 @@
-# Instant_image_denoising
+# Instant-Image-Denoising
 
 ## **Copyright**
 
