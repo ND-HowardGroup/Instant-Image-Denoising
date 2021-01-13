@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TensorFlowVersion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DnCNN_Denoising</a> &gt; <a href="index.source.html" class="el_package">net.dncnn.denoising</a> &gt; <span class="el_source">TensorFlowVersion.java</span></div><h1>TensorFlowVersion.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2019 Board of Regents of the University of Notre Dame Electrical Engineering
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.dncnn.denoising;
+
+import java.util.Objects;
+import java.util.Optional;
+
+/**
+ * A class describing the details of a specific TensorFlow version.
+ *
+ * @author Varun Mannam
+ * 
+ */
+public class TensorFlowVersion 
+{
+
+	protected final String tfVersion;
+	protected final Optional&lt;Boolean&gt; supportsGPU;
+	protected Optional&lt;String&gt; cuda;
+	protected Optional&lt;String&gt; cudnn;
+
+	/**
+	 * @param version         the TensorFlow version number
+	 * @param supportsGPU     whether this version runs on the GPU
+	 * @param compatibleCUDA  the CUDA version compatible with this TensorFlow
+	 *                        version
+	 * @param compatibleCuDNN the CuDNN version compatible with this TensorFlow
+	 *                        version
+	 */
+<span class="fc" id="L57">	public TensorFlowVersion(final String version, final Boolean supportsGPU, final String compatibleCUDA,</span>
+			final String compatibleCuDNN) 
+	{
+<span class="fc" id="L60">		this.tfVersion = version;</span>
+<span class="fc" id="L61">		this.supportsGPU = Optional.ofNullable(supportsGPU);</span>
+<span class="fc" id="L62">		this.cuda = Optional.ofNullable(compatibleCUDA);</span>
+<span class="fc" id="L63">		this.cudnn = Optional.ofNullable(compatibleCuDNN);</span>
+<span class="fc" id="L64">	}</span>
+
+<span class="nc" id="L66">	public TensorFlowVersion(TensorFlowVersion other) </span>
+	{
+<span class="nc" id="L68">		this.tfVersion  = other.tfVersion;</span>
+<span class="nc" id="L69">		this.supportsGPU = other.supportsGPU;</span>
+<span class="nc" id="L70">		this.cuda = other.cuda;</span>
+<span class="nc" id="L71">		this.cudnn = other.cudnn;</span>
+<span class="nc" id="L72">	}</span>
+
+	/**
+	 * @return the version number of TensorFlow, e.g. 0.13.1
+	 */
+	public String getVersionNumber() 
+	{
+<span class="fc" id="L79">		return tfVersion;</span>
+	}
+
+	/**
+	 * @return if the version supports the usage of the GPU
+	 */
+	public Optional&lt;Boolean&gt; usesGPU() 
+	{
+<span class="nc" id="L87">		return supportsGPU;</span>
+	}
+
+	/**
+	 * @return the CUDA version this TensorFlow version is compatible with
+	 */
+	public Optional&lt;String&gt; getCompatibleCUDA() 
+	{
+<span class="nc" id="L95">		return cuda;</span>
+	}
+
+	/**
+	 * @return the CuDNN version this TensorFlow version is compatible with
+	 */
+	public Optional&lt;String&gt; getCompatibleCuDNN() 
+	{
+<span class="nc" id="L103">		return cudnn;</span>
+	}
+
+	@Override
+	public boolean equals(final Object obj) 
+	{
+<span class="fc bfc" id="L109" title="All 2 branches covered.">		if (!(obj.getClass().equals(this.getClass()))) return false;</span>
+<span class="fc" id="L110">		final TensorFlowVersion o = (TensorFlowVersion) obj;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">		return tfVersion.equals(o.tfVersion) //</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">				&amp;&amp; supportsGPU.equals(o.supportsGPU);</span>
+	}
+
+	@Override
+	public int hashCode() 
+	{
+<span class="nc" id="L118">		return Objects.hash(tfVersion, supportsGPU, cuda, cudnn);</span>
+	}
+
+	@Override
+	public String toString() 
+	{
+<span class="fc" id="L124">		String text = &quot;TF &quot; + tfVersion;</span>
+<span class="pc bpc" id="L125" title="2 of 4 branches missed.">		if(supportsGPU.isPresent()) text += &quot; &quot; + (supportsGPU.get() ? &quot;GPU&quot; : &quot;CPU&quot;);</span>
+<span class="pc bpc" id="L126" title="2 of 4 branches missed.">		if (cuda.isPresent() || cudnn.isPresent()) </span>
+		{
+<span class="nc" id="L128">			text += &quot; (&quot;;</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">			if (cuda.isPresent())</span>
+<span class="nc" id="L130">				text += &quot;CUDA &quot; + cuda.get();</span>
+<span class="nc bnc" id="L131" title="All 4 branches missed.">			if (cuda.isPresent() &amp;&amp; cudnn.isPresent())</span>
+<span class="nc" id="L132">				text += &quot;, &quot;;</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">			if (cudnn.isPresent())</span>
+<span class="nc" id="L134">				text += &quot;CuDNN &quot; + cudnn.get();</span>
+<span class="nc" id="L135">			text += &quot;)&quot;;</span>
+		}
+<span class="fc" id="L137">		return text;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TensorFlowLibraryManagementFrame.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DnCNN_Denoising</a> &gt; <a href="index.source.html" class="el_package">net.dncnn.denoising.ui</a> &gt; <span class="el_source">TensorFlowLibraryManagementFrame.java</span></div><h1>TensorFlowLibraryManagementFrame.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2019 Board of Regents of the University of Notre Dame Electrical Engineering
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.dncnn.denoising.ui;
+
+import net.dncnn.denoising.TensorFlowService;
+import net.miginfocom.swing.MigLayout;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+
+/**
+ * The UI part of the {@link TensorFlowLibraryManagementCommand}
+ *
+ * @author Varun Mannam
+ * 
+ */
+class TensorFlowLibraryManagementFrame extends JFrame 
+{
+
+	private static final long serialVersionUID = 1L;
+
+<span class="nc" id="L52">	private static final Color LIST_BACKGROUND_COLOR = new Color(250,250,250);</span>
+<span class="nc" id="L53">	private static final String NOFILTER = &quot;-&quot;;</span>
+
+	private TensorFlowService tensorFlowService;
+	private TensorFlowInstallationHandler installationHandler;
+
+	private JComboBox&lt;String&gt; gpuChoiceBox;
+	private JComboBox&lt;String&gt; cudaChoiceBox;
+	private JComboBox&lt;String&gt; tfChoiceBox;
+	private JPanel installPanel;
+	private JTextArea status;
+
+<span class="nc" id="L64">	private List&lt;DownloadableTensorFlowVersion&gt; availableVersions = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L65">	private List&lt;JRadioButton&gt; buttons = new ArrayList&lt;&gt;();</span>
+
+	TensorFlowLibraryManagementFrame(final TensorFlowService tensorFlowInstallationService, final TensorFlowInstallationHandler installationHandler) {
+<span class="nc" id="L68">		super(&quot;TensorFlow library version management&quot;);</span>
+<span class="nc" id="L69">		this.tensorFlowService = tensorFlowInstallationService;</span>
+<span class="nc" id="L70">		this.installationHandler = installationHandler;</span>
+<span class="nc" id="L71">	}</span>
+
+	public void init() 
+	{
+<span class="nc" id="L75">		JPanel panel = new JPanel();</span>
+<span class="nc" id="L76">		panel.setLayout(new MigLayout(&quot;height 400, wmax 600&quot;));</span>
+<span class="nc" id="L77">		panel.add(new JLabel(&quot;Please select the TensorFlow version you would like to install.&quot;), &quot;wrap&quot;);</span>
+<span class="nc" id="L78">		panel.add(createFilterPanel(), &quot;wrap, span, align right&quot;);</span>
+<span class="nc" id="L79">		panel.add(createInstallPanel(), &quot;wrap, span, grow&quot;);</span>
+<span class="nc" id="L80">		panel.add(createStatus(), &quot;span, grow&quot;);</span>
+<span class="nc" id="L81">		setContentPane(panel);</span>
+<span class="nc" id="L82">	}</span>
+
+	private Component createFilterPanel() 
+	{
+<span class="nc" id="L86">		gpuChoiceBox = new JComboBox&lt;&gt;();</span>
+<span class="nc" id="L87">		gpuChoiceBox.addItem(NOFILTER);</span>
+<span class="nc" id="L88">		gpuChoiceBox.addItem(&quot;GPU&quot;);</span>
+<span class="nc" id="L89">		gpuChoiceBox.addItem(&quot;CPU&quot;);</span>
+<span class="nc" id="L90">		gpuChoiceBox.addActionListener((e) -&gt; updateFilter());</span>
+<span class="nc" id="L91">		cudaChoiceBox = new JComboBox&lt;&gt;();</span>
+<span class="nc" id="L92">		cudaChoiceBox.addActionListener((e) -&gt; updateFilter());</span>
+<span class="nc" id="L93">		tfChoiceBox = new JComboBox&lt;&gt;();</span>
+<span class="nc" id="L94">		tfChoiceBox.addActionListener((e) -&gt; updateFilter());</span>
+<span class="nc" id="L95">		JPanel panel = new JPanel();</span>
+<span class="nc" id="L96">		panel.setLayout(new MigLayout());</span>
+<span class="nc" id="L97">		panel.add(makeLabel(&quot;Filter by..&quot;));</span>
+<span class="nc" id="L98">		panel.add(makeLabel(&quot;Mode: &quot;));</span>
+<span class="nc" id="L99">		panel.add(gpuChoiceBox);</span>
+<span class="nc" id="L100">		panel.add(makeLabel(&quot;CUDA: &quot;));</span>
+<span class="nc" id="L101">		panel.add(cudaChoiceBox);</span>
+<span class="nc" id="L102">		panel.add(makeLabel(&quot;TensorFlow: &quot;));</span>
+<span class="nc" id="L103">		panel.add(tfChoiceBox);</span>
+<span class="nc" id="L104">		return panel;</span>
+	}
+
+	private Component createStatus() 
+	{
+<span class="nc" id="L109">		status = new JTextArea();</span>
+<span class="nc" id="L110">		status.setBorder(BorderFactory.createEmptyBorder());</span>
+<span class="nc" id="L111">		status.setEditable(false);</span>
+<span class="nc" id="L112">		status.setWrapStyleWord(true);</span>
+<span class="nc" id="L113">		status.setLineWrap(true);</span>
+<span class="nc" id="L114">		status.setOpaque(false);</span>
+<span class="nc" id="L115">		return status;</span>
+	}
+
+	private void updateFilter() 
+	{
+<span class="nc" id="L120">		installPanel.removeAll();</span>
+<span class="nc" id="L121">		buttons.forEach(btn -&gt; {</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">			if(filter(&quot;&quot;, gpuChoiceBox, btn)) return;</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">			if(filter(&quot;CUDA &quot;, cudaChoiceBox, btn)) return;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">			if(filter(&quot;TF &quot;, tfChoiceBox, btn)) return;</span>
+<span class="nc" id="L125">			installPanel.add(btn);</span>
+<span class="nc" id="L126">		});</span>
+<span class="nc" id="L127">		installPanel.revalidate();</span>
+<span class="nc" id="L128">		installPanel.repaint();</span>
+<span class="nc" id="L129">	}</span>
+
+	private boolean filter(String title, JComboBox&lt;String&gt; choiceBox, JRadioButton btn) 
+	{
+<span class="nc bnc" id="L133" title="All 2 branches missed.">		if(choiceBox.getSelectedItem().toString().equals(NOFILTER)) return false;</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">		return !btn.getText().contains(title + choiceBox.getSelectedItem().toString());</span>
+	}
+
+	private JLabel makeLabel(String s) 
+	{
+<span class="nc" id="L139">		JLabel label = new JLabel(s);</span>
+<span class="nc" id="L140">		label.setHorizontalAlignment(SwingConstants.RIGHT);</span>
+<span class="nc" id="L141">		label.setHorizontalTextPosition(SwingConstants.RIGHT);</span>
+<span class="nc" id="L142">		return label;</span>
+	}
+
+	private Component createInstallPanel() 
+	{
+<span class="nc" id="L147">		installPanel = new JPanel(new MigLayout(&quot;flowy&quot;));</span>
+<span class="nc" id="L148">		JScrollPane scroll = new JScrollPane(installPanel);</span>
+<span class="nc" id="L149">		scroll.setBorder(BorderFactory.createEmptyBorder());</span>
+<span class="nc" id="L150">		installPanel.setBackground(LIST_BACKGROUND_COLOR);</span>
+<span class="nc" id="L151">		return scroll;</span>
+	}
+
+	void updateChoices(List&lt;DownloadableTensorFlowVersion&gt; availableVersions) 
+	{
+<span class="nc" id="L156">		availableVersions.sort(Comparator.comparing(DownloadableTensorFlowVersion::getComparableTFVersion).reversed());</span>
+<span class="nc" id="L157">		this.availableVersions = availableVersions;</span>
+<span class="nc" id="L158">		updateCUDAChoices();</span>
+<span class="nc" id="L159">		updateTFChoices();</span>
+<span class="nc" id="L160">		ButtonGroup versionGroup = new ButtonGroup();</span>
+<span class="nc" id="L161">		installPanel.removeAll();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">		for( DownloadableTensorFlowVersion version : availableVersions) </span>
+		{
+<span class="nc" id="L164">			JRadioButton btn = new JRadioButton(version.toString());</span>
+<span class="nc" id="L165">			btn.setToolTipText(version.getOriginDescription());</span>
+<span class="nc" id="L166">			btn.setSelected(version.isActive());</span>
+<span class="nc" id="L167">			btn.setOpaque(false);</span>
+<span class="nc" id="L168">			versionGroup.add(btn);</span>
+<span class="nc" id="L169">			buttons.add(btn);</span>
+<span class="nc" id="L170">			btn.addActionListener(e -&gt; {</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">				if(btn.isSelected()) {</span>
+<span class="nc" id="L172">					new Thread(() -&gt; activateVersion(version)).start();</span>
+				}
+<span class="nc" id="L174">			});</span>
+		}
+<span class="nc" id="L176">		updateFilter();</span>
+<span class="nc" id="L177">		updateStatus();</span>
+<span class="nc" id="L178">	}</span>
+
+	private void updateStatus() {
+<span class="nc" id="L181">		status.setText(tensorFlowService.getStatus().getInfo());</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">		if(!tensorFlowService.getStatus().isLoaded()) </span>
+		{
+<span class="nc" id="L184">			status.setForeground(Color.red);</span>
+<span class="nc" id="L185">		} </span>
+		else 
+		{
+<span class="nc" id="L188">			status.setForeground(Color.black);</span>
+		}
+<span class="nc" id="L190">	}</span>
+
+	private void activateVersion(DownloadableTensorFlowVersion version) 
+	{
+<span class="nc bnc" id="L194" title="All 2 branches missed.">		if(version.isActive()) </span>
+		{
+<span class="nc" id="L196">			System.out.println(&quot;[WARNING] Cannot activate version, already active: &quot; + version);</span>
+<span class="nc" id="L197">			return;</span>
+		}
+<span class="nc" id="L199">		showWaitMessage();</span>
+		try 
+		{
+<span class="nc" id="L202">			installationHandler.activateVersion(version);</span>
+<span class="nc" id="L203">		} </span>
+<span class="nc" id="L204">		catch (IOException e) </span>
+		{
+<span class="nc" id="L206">			e.printStackTrace();</span>
+<span class="nc" id="L207">			Object[] options = {&quot;Yes&quot;,</span>
+<span class="nc" id="L208">					&quot;No&quot;,</span>
+<span class="nc" id="L209">					&quot;Cancel&quot;};</span>
+<span class="nc" id="L210">			int choice = JOptionPane.showOptionDialog(this,</span>
+<span class="nc" id="L211">					&quot;Error while unpacking library file &quot; + version.getLocalPath() + &quot;.\nShould it be downloaded again?&quot;,</span>
+<span class="nc" id="L212">					&quot;Unpacking library error&quot;,</span>
+<span class="nc" id="L213">					JOptionPane.YES_NO_CANCEL_OPTION,</span>
+<span class="nc" id="L214">					JOptionPane.QUESTION_MESSAGE,</span>
+<span class="nc" id="L215">					null,</span>
+<span class="nc" id="L216">					options,</span>
+<span class="nc" id="L217">					options[0]);</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">			if(choice == 0) </span>
+			{
+<span class="nc" id="L220">				version.discardCache();</span>
+				try 
+				{
+<span class="nc" id="L223">					installationHandler.activateVersion(version);</span>
+<span class="nc" id="L224">				} </span>
+<span class="nc" id="L225">				catch (IOException e1) </span>
+				{
+<span class="nc" id="L227">					e1.printStackTrace();</span>
+				}
+<span class="nc" id="L229">			} </span>
+			else 
+			{
+<span class="nc" id="L232">				status.setText(&quot;Installation failed: &quot; + e.getClass().getName() + &quot;: &quot; + e.getMessage());</span>
+<span class="nc" id="L233">				return;</span>
+			}
+		}
+<span class="nc" id="L236">		status.setText(&quot;&quot;);</span>
+<span class="nc" id="L237">		JOptionPane.showMessageDialog(null,</span>
+<span class="nc" id="L238">				&quot;Installed selected TensorFlow version. Please restart Fiji to load it.&quot;,</span>
+<span class="nc" id="L239">				&quot;Please restart&quot;,</span>
+<span class="nc" id="L240">				JOptionPane.PLAIN_MESSAGE);</span>
+<span class="nc" id="L241">		dispose();</span>
+<span class="nc" id="L242">	}</span>
+
+	private void showWaitMessage() 
+	{
+<span class="nc" id="L246">		status.setForeground(Color.black);</span>
+<span class="nc" id="L247">		status.setText(&quot;Please wait..&quot;);</span>
+<span class="nc" id="L248">	}</span>
+
+	private void updateCUDAChoices() 
+	{
+<span class="nc" id="L252">		Set&lt;String&gt; choices = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">		for(DownloadableTensorFlowVersion version :availableVersions) </span>
+		{
+<span class="nc bnc" id="L255" title="All 2 branches missed.">			if(version.getCompatibleCUDA().isPresent())</span>
+<span class="nc" id="L256">				choices.add(version.getCompatibleCUDA().get());</span>
+		}
+<span class="nc" id="L258">		cudaChoiceBox.removeAllItems();</span>
+<span class="nc" id="L259">		cudaChoiceBox.addItem(NOFILTER);</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">		for(String choice : choices) {</span>
+<span class="nc" id="L261">			cudaChoiceBox.addItem(choice);</span>
+		}
+<span class="nc" id="L263">	}</span>
+
+	private void updateTFChoices() 
+	{
+<span class="nc" id="L267">		Set&lt;String&gt; choices = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">		for(DownloadableTensorFlowVersion version :availableVersions) </span>
+		{
+<span class="nc bnc" id="L270" title="All 2 branches missed.">			if(version.getVersionNumber() != null) choices.add(version.getVersionNumber());</span>
+		}
+<span class="nc" id="L272">		tfChoiceBox.removeAllItems();</span>
+<span class="nc" id="L273">		tfChoiceBox.addItem(NOFILTER);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">		for(String choice : choices) {</span>
+<span class="nc" id="L275">			tfChoiceBox.addItem(choice);</span>
+		}
+<span class="nc" id="L277">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

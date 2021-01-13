@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UnpackUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DnCNN_Denoising</a> &gt; <a href="index.source.html" class="el_package">net.dncnn.denoising.util</a> &gt; <span class="el_source">UnpackUtil.java</span></div><h1>UnpackUtil.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2019 Board of Regents of the University of Notre Dame Electrical Engineering
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.dncnn.denoising.util;
+
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.scijava.app.StatusService;
+import org.scijava.log.LogService;
+import org.scijava.util.ByteArray;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+/**
+ * Utility class for unpacking archives
+ * TODO: generalize and move it to a place where others can use it as well
+ *
+ * @author Varun Mannam
+ */
+public final class UnpackUtil {
+
+	private UnpackUtil(){}
+
+	public static void unGZip(String tarGzFile, File output, String symLinkOutputDir, LogService log, StatusService status) throws IOException 
+	{
+<span class="nc" id="L57">		log(&quot;Unpacking &quot; + tarGzFile + &quot; to &quot; + output, log , status);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">		if (!output.exists()) </span>
+		{
+<span class="nc" id="L60">			output.mkdirs();</span>
+		}
+
+<span class="nc" id="L63">		String tarFileName = tarGzFile.replace(&quot;.gz&quot;, &quot;&quot;);</span>
+<span class="nc" id="L64">		FileInputStream instream = new FileInputStream(tarGzFile);</span>
+<span class="nc" id="L65">		GZIPInputStream ginstream = new GZIPInputStream(instream);</span>
+<span class="nc" id="L66">		FileOutputStream outstream = new FileOutputStream(tarFileName);</span>
+<span class="nc" id="L67">		byte[] buf = new byte[1024];</span>
+		int len;
+<span class="nc bnc" id="L69" title="All 2 branches missed.">		while ((len = ginstream.read(buf)) &gt; 0) </span>
+		{
+<span class="nc" id="L71">			outstream.write(buf, 0, len);</span>
+
+		}
+<span class="nc" id="L74">		ginstream.close();</span>
+<span class="nc" id="L75">		outstream.close();</span>
+<span class="nc" id="L76">		TarArchiveInputStream myTarFile = new TarArchiveInputStream(new FileInputStream(tarFileName));</span>
+		TarArchiveEntry entry;
+<span class="nc bnc" id="L78" title="All 2 branches missed.">		while ((entry = myTarFile.getNextTarEntry()) != null) </span>
+		{
+<span class="nc bnc" id="L80" title="All 4 branches missed.">			if (entry.isSymbolicLink() || entry.isLink()) </span>
+			{
+<span class="nc" id="L82">				Path source = new File(output, entry.getName()).toPath();</span>
+<span class="nc" id="L83">				Path target = new File(symLinkOutputDir, entry.getLinkName()).toPath();</span>
+<span class="nc" id="L84">				deleteIfExists(source.toAbsolutePath().toString());</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">				if (entry.isSymbolicLink()) </span>
+				{
+<span class="nc" id="L87">					log(&quot;Creating symbolic link: &quot; + source + &quot; -&gt; &quot; + target, log, status);</span>
+<span class="nc" id="L88">					Files.createSymbolicLink(source, target);</span>
+<span class="nc" id="L89">				} </span>
+				else 
+				{
+<span class="nc" id="L92">					log(&quot;Creating link: &quot; + source + &quot; -&gt; &quot; + target, log, status);</span>
+<span class="nc" id="L93">					Files.createLink(source, target);</span>
+				}
+<span class="nc" id="L95">			} </span>
+			else 
+			{
+<span class="nc" id="L98">				File outEntry = new File(output + &quot;/&quot; + entry.getName());</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">				if (!outEntry.getParentFile().exists()) </span>
+				{
+<span class="nc" id="L101">					outEntry.getParentFile().mkdirs();</span>
+				}
+<span class="nc bnc" id="L103" title="All 2 branches missed.">				if (outEntry.isDirectory())</span>
+				{
+<span class="nc" id="L105">					continue;</span>
+				}
+<span class="nc" id="L107">				log(&quot;Writing &quot; + outEntry, log, status);</span>
+<span class="nc" id="L108">				final byte[] buf1 = new byte[64 * 1024];</span>
+<span class="nc" id="L109">				final int size1 = (int) entry.getSize();</span>
+<span class="nc" id="L110">				int len1 = 0;</span>
+<span class="nc" id="L111">				try (final FileOutputStream outEntryStream = new FileOutputStream(outEntry)) </span>
+				{
+<span class="nc" id="L113">					while (true) </span>
+					{
+<span class="nc" id="L115">						status.showStatus(len1, size1, &quot;Unpacking &quot; + entry.getName());</span>
+<span class="nc" id="L116">						final int r = myTarFile.read(buf1, 0, buf1.length);</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">						if (r &lt; 0) break; // end of entry</span>
+<span class="nc" id="L118">						len1 += r;</span>
+<span class="nc" id="L119">						outEntryStream.write(buf1, 0, r);</span>
+					}
+				}
+			}
+		}
+<span class="nc" id="L124">		status.clearStatus();</span>
+<span class="nc" id="L125">		myTarFile.close();</span>
+<span class="nc" id="L126">		File tarFile = new File(tarFileName);</span>
+<span class="nc" id="L127">		tarFile.delete();</span>
+<span class="nc" id="L128">	}</span>
+
+	public static void unZip(String zipFile, File output, LogService log, StatusService status) throws IOException 
+	{
+<span class="nc" id="L132">		log(&quot;Unpacking &quot; + zipFile + &quot; to &quot; + output, log, status);</span>
+<span class="nc" id="L133">		output.mkdirs();</span>
+<span class="nc" id="L134">		try (final ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) </span>
+		{
+<span class="nc" id="L136">			unZip(zis, output, log, status);</span>
+		}
+<span class="nc" id="L138">	}</span>
+
+	public static void unZip(File output, ByteArray byteArray, LogService log, StatusService status) throws IOException 
+	{
+		// Extract the contents of the compressed data to the model cache.
+<span class="nc" id="L143">		final ByteArrayInputStream bais = new ByteArrayInputStream(//</span>
+<span class="nc" id="L144">				byteArray.getArray(), 0, byteArray.size());</span>
+<span class="nc" id="L145">		output.mkdirs();</span>
+<span class="nc" id="L146">		try (final ZipInputStream zis = new ZipInputStream(bais)) </span>
+		{
+<span class="nc" id="L148">			unZip(zis, output, log, status);</span>
+		}
+<span class="nc" id="L150">	}</span>
+
+	private static void unZip(ZipInputStream zis, File output, LogService log, StatusService status) throws IOException 
+	{
+<span class="nc" id="L154">		final byte[] buf = new byte[64 * 1024];</span>
+		while (true) {
+<span class="nc" id="L156">			final ZipEntry entry = zis.getNextEntry();</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">			if (entry == null) break; // All done!</span>
+<span class="nc" id="L158">			final String name = entry.getName();</span>
+<span class="nc" id="L159">			log(&quot;Unpacking &quot; + name, log, status);</span>
+<span class="nc" id="L160">			final File outFile = new File(output, name);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">			if (entry.isDirectory()) {</span>
+<span class="nc" id="L162">				outFile.mkdirs();</span>
+<span class="nc" id="L163">			}</span>
+			else 
+			{
+<span class="nc" id="L166">				final int size = (int) entry.getSize();</span>
+<span class="nc" id="L167">				int len = 0;</span>
+<span class="nc" id="L168">				try (final FileOutputStream out = new FileOutputStream(outFile)) </span>
+				{
+<span class="nc" id="L170">					while (true) </span>
+					{
+<span class="nc" id="L172">						status.showStatus(len, size, &quot;Unpacking &quot; + name);</span>
+<span class="nc" id="L173">						final int r = zis.read(buf);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">						if (r &lt; 0) break; // end of entry</span>
+<span class="nc" id="L175">						len += r;</span>
+<span class="nc" id="L176">						out.write(buf, 0, r);</span>
+					}
+				}
+			}
+		}
+<span class="nc" id="L181">		status.clearStatus();</span>
+<span class="nc" id="L182">	}</span>
+
+	private static void deleteIfExists(String filePath) 
+	{
+<span class="nc" id="L186">		File file = new File(filePath);</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">		if(file.exists()) </span>
+		{
+<span class="nc" id="L189">			file.delete();</span>
+		}
+<span class="nc" id="L191">	}</span>
+
+	private static void log(String msg, LogService log, StatusService status) 
+	{
+<span class="nc" id="L195">		log.info(msg);</span>
+<span class="nc" id="L196">		status.showStatus(msg);</span>
+<span class="nc" id="L197">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

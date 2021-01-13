@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultTensorFlowService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Noise2Noise_denoising</a> &gt; <a href="index.source.html" class="el_package">net.image.denoising</a> &gt; <span class="el_source">DefaultTensorFlowService.java</span></div><h1>DefaultTensorFlowService.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2017 Board of Regents of the University of Notre Dame Electrical Engineering.
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.image.denoising;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import org.scijava.app.AppService;
+import org.scijava.app.StatusService;
+import org.scijava.download.DiskLocationCache;
+import org.scijava.download.DownloadService;
+import org.scijava.event.EventHandler;
+import org.scijava.io.location.BytesLocation;
+import org.scijava.io.location.Location;
+import org.scijava.log.LogService;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.service.AbstractService;
+import org.scijava.service.Service;
+import org.scijava.task.Task;
+import org.scijava.task.event.TaskEvent;
+import org.scijava.util.ByteArray;
+import org.scijava.util.FileUtils;
+import org.tensorflow.Graph;
+import org.tensorflow.SavedModelBundle;
+import org.tensorflow.TensorFlow;
+
+import net.image.denoising.util.TensorFlowUtil;
+import net.image.denoising.util.UnpackUtil;
+
+/**
+ * Default implementation of {@link TensorFlowService}.
+ *
+ * @author Varun Mannam
+ */
+@Plugin(type = Service.class)
+<span class="fc" id="L75">public class DefaultTensorFlowService extends AbstractService implements TensorFlowService</span>
+{
+
+	@Parameter
+	private DownloadService downloadService;
+
+	@Parameter
+	private AppService appService;
+
+	@Parameter
+	private LogService logService;
+
+	/** Models which are already cached in memory. */
+<span class="fc" id="L88">	private final Map&lt;String, SavedModelBundle&gt; models = new HashMap&lt;&gt;();</span>
+
+	/** Graphs which are already cached in memory. */
+<span class="fc" id="L91">	private final Map&lt;String, Graph&gt; graphs = new HashMap&lt;&gt;();</span>
+
+	/** Labels which are already cached in memory. */
+<span class="fc" id="L94">	private final Map&lt;String, List&lt;String&gt;&gt; labelses = new HashMap&lt;&gt;();</span>
+
+	/** Disk cache defining where compressed models are stored locally. */
+	private DiskLocationCache modelCache;
+
+<span class="fc" id="L99">	private TensorFlowLibraryStatus tfStatus = TensorFlowLibraryStatus.notLoaded();</span>
+
+	/** The loaded TensorFlow version. Will be initialized once in loadLibrary */
+	private TensorFlowVersion tfVersion;
+
+	// -- TensorFlowService methods --
+
+	@Override
+	public SavedModelBundle loadModel(final Location source,
+		final String modelName, final String... tags) throws IOException
+	{
+<span class="nc" id="L110">		final String key = modelName + &quot;/&quot; + Arrays.toString(tags);</span>
+
+		// If the model is already cached in memory, return it.
+<span class="nc bnc" id="L113" title="All 2 branches missed.">		if (models.containsKey(key)) return models.get(key);</span>
+
+		// Get a local directory with unpacked model data.
+<span class="nc" id="L116">		final File modelDir = modelDir(source, modelName);</span>
+
+		// Load the saved model.
+<span class="nc" id="L119">		final SavedModelBundle model = //</span>
+<span class="nc" id="L120">			SavedModelBundle.load(modelDir.getAbsolutePath(), tags);</span>
+
+		// Cache the result for performance next time.
+<span class="nc" id="L123">		models.put(key, model);</span>
+
+<span class="nc" id="L125">		return model;</span>
+	}
+
+	@Override
+	public Graph loadGraph(final Location source, final String modelName,
+		final String graphPath) throws IOException
+	{
+<span class="fc" id="L132">		final String key = modelName + &quot;/&quot; + graphPath;</span>
+
+		// If the graph is already cached in memory, return it.
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">		if (graphs.containsKey(key)) return graphs.get(key);</span>
+
+		// Get a local directory with unpacked model data.
+<span class="fc" id="L138">		final File modelDir = modelDir(source, modelName);</span>
+
+		// Read the serialized graph.
+<span class="fc" id="L141">		final byte[] graphDef = FileUtils.readFile(new File(modelDir, graphPath));</span>
+
+		// Convert to a TensorFlow Graph object.
+<span class="fc" id="L144">		final Graph graph = new Graph();</span>
+<span class="fc" id="L145">		graph.importGraphDef(graphDef);</span>
+
+		// Cache the result for performance next time.
+<span class="fc" id="L148">		graphs.put(key, graph);</span>
+
+<span class="fc" id="L150">		return graph;</span>
+	}
+
+	@Override
+	public List&lt;String&gt; loadLabels(final Location source, final String modelName,
+		final String labelsPath) throws IOException
+	{
+<span class="nc" id="L157">		final String key = modelName + &quot;/&quot; + labelsPath;</span>
+
+		// If the labels are already cached in memory, return them.
+<span class="nc bnc" id="L160" title="All 2 branches missed.">		if (labelses.containsKey(key)) return labelses.get(key);</span>
+
+		// Get a local directory with unpacked model data.
+<span class="nc" id="L163">		final File modelDir = modelDir(source, modelName);</span>
+
+		// Read the labels.
+<span class="nc" id="L166">		final File labelsFile = new File(modelDir, labelsPath);</span>
+		final List&lt;String&gt; labels;
+<span class="nc" id="L168">		try (final BufferedReader labelsReader = new BufferedReader(</span>
+<span class="nc" id="L169">			new InputStreamReader(new FileInputStream(labelsFile),</span>
+<span class="nc" id="L170">				StandardCharsets.UTF_8)))</span>
+		{
+<span class="nc" id="L172">			labels = labelsReader.lines().collect(Collectors.toList());</span>
+		}
+
+		// Cache the result for performance next time.
+<span class="nc" id="L176">		labelses.put(key, labels);</span>
+
+<span class="nc" id="L178">		return labels;</span>
+	}
+
+	/**
+	 * Loads the TensorFlow library.
+	 */
+	@Override
+	public synchronized void loadLibrary() {
+		// Do not try to load the library twice
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">		if (tfStatus.triedLoading())</span>
+<span class="nc" id="L188">			return;</span>
+
+		// Handle a previous crash
+<span class="fc" id="L191">		boolean jniCrashed = false;</span>
+<span class="fc" id="L192">		boolean jarCrashed = false;</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">		if (getCrashFile().exists()) {</span>
+<span class="nc" id="L194">			logService.warn(&quot;Crash file exists: &quot; + getCrashFile().getAbsolutePath());</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">			if (getNativeVersionFile().exists()) {</span>
+				// The jni library crashed the JVM: We should test if the jar library works
+<span class="nc" id="L197">				jniCrashed = true;</span>
+<span class="nc" id="L198">				tfStatus = TensorFlowLibraryStatus.crashed(&quot;TensorFlow native library crashed: &quot;);</span>
+<span class="nc" id="L199">				logService.warn(&quot;The JVM seems to have crashed when loading the TensorFlow native library.&quot;);</span>
+<span class="nc" id="L200">				logService.warn(&quot;Trying to delete TensorFlow libraries from &quot; + TensorFlowUtil.getLibDir(getRoot()));</span>
+<span class="nc" id="L201">				TensorFlowUtil.removeNativeLibraries(getRoot(), logService);</span>
+<span class="nc" id="L202">				logService.warn(&quot;Trying to load the library provided by this JAR instead:&quot; + TensorFlowUtil.getTensorFlowJAR());</span>
+<span class="nc" id="L203">			} else {</span>
+				// The jar library crashed the JVM: We should not try to load it again
+<span class="nc" id="L205">				jarCrashed = true;</span>
+<span class="nc" id="L206">				tfStatus = TensorFlowLibraryStatus.crashed(&quot;TensorFlow JAR crashed: &quot; + TensorFlowUtil.getTensorFlowJAR());</span>
+<span class="nc" id="L207">				logService.warn(&quot;The JVM seems to have crashed when loading the TensorFlow JAR library: &quot; + TensorFlowUtil.getTensorFlowJAR());</span>
+<span class="nc" id="L208">				logService.warn(&quot;Please run Edit &gt; Options &gt; TensorFlow and choose another version or delete the crash file to load the JAR library again.&quot;);</span>
+			}
+		}
+
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">		if(!jarCrashed) {</span>
+
+<span class="fc" id="L214">			createCrashFile();</span>
+
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">			if (jniCrashed) {</span>
+				// jni crashed, ignore jni and load jar
+<span class="nc" id="L218">				tfStatus =  loadFromJAR();</span>
+<span class="nc" id="L219">			} else {</span>
+<span class="fc" id="L220">				tfStatus = loadFromLib();</span>
+<span class="pc bpc" id="L221" title="2 of 4 branches missed.">				if(!tfStatus.isFailed() &amp;&amp; !tfStatus.isLoaded()) {</span>
+					// no jni present, load jar
+<span class="fc" id="L223">					tfStatus = loadFromJAR();</span>
+				}
+			}
+
+<span class="fc" id="L227">			deleteCrashFile();</span>
+
+<span class="pc bpc" id="L229" title="3 of 4 branches missed.">			if(!tfStatus.isLoaded() &amp;&amp; !tfStatus.isFailed()) {</span>
+<span class="nc" id="L230">				tfStatus = TensorFlowLibraryStatus.failed(&quot;Could not find any TensorFlow library.&quot;);</span>
+			}
+		}
+
+<span class="fc" id="L234">	}</span>
+
+	/**
+	 * Tries to load the TensorFlow library from Fiji.app/lib folder.
+	 * In case of success, {@link #tfVersion} is set to the loaded TensorFlow version
+	 * @return the {@link TensorFlowLibraryStatus} indicating success or failure of loading the library
+	 */
+	private TensorFlowLibraryStatus loadFromLib() {
+		try {
+<span class="nc" id="L243">			System.loadLibrary(&quot;tensorflow_jni&quot;);</span>
+			try {
+<span class="nc" id="L245">				tfVersion = TensorFlowUtil.readNativeVersionFile(getRoot());</span>
+<span class="nc" id="L246">			} catch (IOException e) {</span>
+				// could not read native version file, unknown version origin
+<span class="nc" id="L248">				logService.warn(e.getMessage());</span>
+<span class="nc" id="L249">				tfVersion = new TensorFlowVersion(TensorFlow.version(), null, null, null);</span>
+			}
+<span class="nc" id="L251">			return TensorFlowLibraryStatus.loaded(&quot;Using native TensorFlow version: &quot; + tfVersion);</span>
+<span class="fc" id="L252">		} catch (final UnsatisfiedLinkError e) {</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">			if(e.getMessage().contains(&quot;no tensorflow_jni&quot;)) {</span>
+<span class="fc" id="L254">				logService.info(&quot;No TF library found in &quot; + TensorFlowUtil.getLibDir(getRoot()) + &quot;.&quot;);</span>
+<span class="fc" id="L255">				return TensorFlowLibraryStatus.notLoaded();</span>
+			} else {
+				try {
+<span class="nc" id="L258">					TensorFlowVersion failingVersion = TensorFlowUtil.readNativeVersionFile(getRoot());</span>
+<span class="nc" id="L259">					logService.warn(&quot;Could not load native TF library &quot; + failingVersion + &quot; &quot; + e.getMessage());</span>
+<span class="nc" id="L260">				} catch (IOException e1) {</span>
+<span class="nc" id="L261">					logService.warn(&quot;Could not load native TF library (unknown version) &quot; + e.getMessage());</span>
+				}
+				// TODO maybe ask if the native lib should be deleted from /lib
+<span class="nc" id="L264">				return TensorFlowLibraryStatus.failed( e.getMessage());</span>
+			}
+		}
+	}
+
+	/**
+	 * Tries to load the TensorFlow library from the TensorFlow JAR in the class path.
+	 * In case of success, {@link #tfVersion} is set to the loaded TensorFlow version
+	 * @return the {@link TensorFlowLibraryStatus} indicating success or failure of loading the library
+	 */
+	private TensorFlowLibraryStatus loadFromJAR() {
+		// Calling a native method will load the library from the jar
+		try {
+<span class="fc" id="L277">			tfVersion = getJarVersion();</span>
+<span class="fc" id="L278">			return TensorFlowLibraryStatus.loaded(&quot;Using default TensorFlow version from JAR: &quot; + tfVersion);</span>
+<span class="nc" id="L279">		} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {</span>
+<span class="nc" id="L280">			logService.warn(&quot;Could not load JAR TF library: &quot; + e.getMessage());</span>
+<span class="nc" id="L281">			return TensorFlowLibraryStatus.failed(e.getMessage());</span>
+		}
+	}
+
+	private File getNativeVersionFile() {
+<span class="nc" id="L286">		return TensorFlowUtil.getNativeVersionFile(getRoot());</span>
+	}
+
+	private File getCrashFile() {
+<span class="fc" id="L290">		return TensorFlowUtil.getCrashFile(getRoot());</span>
+	}
+
+	@Override
+	public synchronized TensorFlowVersion getTensorFlowVersion() {
+<span class="fc" id="L295">		return tfVersion;</span>
+	}
+
+	@Override
+	public synchronized TensorFlowLibraryStatus getStatus() {
+<span class="fc" id="L300">		return tfStatus;</span>
+	}
+
+	// -- Disposable methods --
+
+	@Override
+	public void dispose() {
+		// Dispose models.
+<span class="nc bnc" id="L308" title="All 2 branches missed.">		for (final SavedModelBundle model : models.values()) {</span>
+<span class="nc" id="L309">			model.close();</span>
+		}
+<span class="nc" id="L311">		models.clear();</span>
+
+		// Dispose graphs.
+<span class="nc bnc" id="L314" title="All 2 branches missed.">		for (final Graph graph : graphs.values()) {</span>
+<span class="nc" id="L315">			graph.close();</span>
+		}
+<span class="nc" id="L317">		graphs.clear();</span>
+
+		// Dispose labels.
+<span class="nc" id="L320">		labelses.clear();</span>
+<span class="nc" id="L321">	}</span>
+
+	// -- Helper methods --
+
+	private DiskLocationCache modelCache() {
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">		if (modelCache == null) initModelCache();</span>
+<span class="fc" id="L327">		return modelCache;</span>
+	}
+
+	private synchronized void initModelCache() {
+<span class="fc" id="L331">		final DiskLocationCache cache = new DiskLocationCache();</span>
+
+		// Cache the models into $IMAGEJ_DIR/models.
+<span class="fc" id="L334">		final File baseDir = appService.getApp().getBaseDirectory();</span>
+<span class="fc" id="L335">		final File cacheBase = new File(baseDir, &quot;models&quot;);</span>
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">		if (!cacheBase.exists()) cacheBase.mkdirs();</span>
+<span class="fc" id="L337">		cache.setBaseDirectory(cacheBase);</span>
+
+<span class="fc" id="L339">		modelCache = cache;</span>
+<span class="fc" id="L340">	}</span>
+
+	// TODO - Migrate unpacking logic into the DownloadService proper.
+	// And consider whether/how to avoid using so much temporary space.
+
+	private File modelDir(final Location source, final String modelName)
+		throws IOException
+	{
+<span class="fc" id="L348">		final File modelDir = new File(modelCache().getBaseDirectory(), modelName);</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">		if (!modelDir.exists()) try {</span>
+<span class="nc" id="L350">			downloadAndUnpackResource(source, modelDir);</span>
+<span class="nc" id="L351">		}</span>
+<span class="nc" id="L352">		catch (final InterruptedException | ExecutionException exc) {</span>
+<span class="nc" id="L353">			throw new IOException(exc);</span>
+		}
+<span class="fc" id="L355">		return modelDir;</span>
+	}
+
+	/** Downloads and unpacks a zipped resource. */
+	private void downloadAndUnpackResource(final Location source,
+		final File destDir) throws InterruptedException, ExecutionException,
+		IOException
+	{
+		// Allocate a dynamic byte array.
+<span class="nc" id="L364">		final ByteArray byteArray = new ByteArray(1024 * 1024);</span>
+
+		// Download the compressed model into the byte array.
+<span class="nc" id="L367">		final BytesLocation bytes = new BytesLocation(byteArray);</span>
+<span class="nc" id="L368">		final Task task = //</span>
+<span class="nc" id="L369">			downloadService.download(source, bytes, modelCache()).task();</span>
+<span class="nc" id="L370">		final StatusUpdater statusUpdater = new StatusUpdater(task);</span>
+<span class="nc" id="L371">		context().inject(statusUpdater);</span>
+<span class="nc" id="L372">		task.waitFor();</span>
+<span class="nc" id="L373">		UnpackUtil.unZip(destDir, byteArray, logService, statusUpdater.statusService);</span>
+
+<span class="nc" id="L375">		statusUpdater.clear();</span>
+<span class="nc" id="L376">	}</span>
+
+	private void createCrashFile() {
+		try {
+<span class="fc" id="L380">			getCrashFile().getParentFile().mkdirs();</span>
+<span class="fc" id="L381">			getCrashFile().createNewFile();</span>
+<span class="pc" id="L382">		} catch (final IOException e) {</span>
+<span class="nc" id="L383">			logService.warn(e);</span>
+		}
+<span class="fc" id="L385">	}</span>
+
+	private void deleteCrashFile() {
+<span class="fc" id="L388">		final File crashFile = getCrashFile();</span>
+<span class="pc bpc" id="L389" title="1 of 2 branches missed.">		if(crashFile.exists()) crashFile.delete();</span>
+<span class="fc" id="L390">	}</span>
+
+	private TensorFlowVersion getJarVersion() {
+<span class="fc" id="L393">		TensorFlowVersion version = TensorFlowUtil.versionFromClassPathJAR();</span>
+<span class="fc" id="L394">		String loadedVersion = TensorFlow.version();</span>
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">		if(!version.getVersionNumber().equals(loadedVersion)) {</span>
+<span class="nc" id="L396">			logService.warn(&quot;Loaded TensorFlow version is &quot; + loadedVersion</span>
+<span class="nc" id="L397">					+ &quot; whereas the TensorFlow class in the classpath suggests version &quot;</span>
+<span class="nc" id="L398">					+ version.getVersionNumber() + &quot;.&quot;);</span>
+<span class="nc" id="L399">			return new TensorFlowVersion(loadedVersion, null, null, null);</span>
+		}
+<span class="fc" id="L401">		return version;</span>
+	}
+
+	private String getRoot() {
+<span class="fc" id="L405">		return appService.getApp().getBaseDirectory().getAbsolutePath();</span>
+	}
+
+	/**
+	 * A dumb class which passes task events on to the {@link StatusService}.
+	 * Eventually, this sort of logic will be built in to SciJava Common. But for
+	 * the moment, we do it ourselves.
+	 */
+	private class StatusUpdater {
+<span class="nc" id="L414">		private final DecimalFormat formatter = new DecimalFormat(&quot;##.##&quot;);</span>
+		private final Task task;
+
+		private long lastUpdate;
+
+		@Parameter
+		private StatusService statusService;
+
+<span class="nc" id="L422">		private StatusUpdater(final Task task) {</span>
+<span class="nc" id="L423">			this.task = task;</span>
+<span class="nc" id="L424">		}</span>
+
+		public void update(final String message) {
+<span class="nc" id="L427">			statusService.showStatus(message);</span>
+<span class="nc" id="L428">		}</span>
+
+		public void update(final int value, final int max, final String message) {
+<span class="nc" id="L431">			final long timestamp = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">			if (timestamp &lt; lastUpdate + 100) return; // Avoid excessive updates.</span>
+<span class="nc" id="L433">			lastUpdate = timestamp;</span>
+
+<span class="nc" id="L435">			final double percent = 100.0 * value / max;</span>
+<span class="nc" id="L436">			statusService.showStatus(value, max, message + &quot;: &quot; + //</span>
+<span class="nc" id="L437">				formatter.format(percent) + &quot;%&quot;);</span>
+<span class="nc" id="L438">		}</span>
+
+		public void clear() {
+<span class="nc" id="L441">			statusService.clearStatus();</span>
+<span class="nc" id="L442">		}</span>
+
+		@EventHandler
+		private void onEvent(final TaskEvent evt) {
+<span class="nc bnc" id="L446" title="All 2 branches missed.">			if (task == evt.getTask()) {</span>
+<span class="nc" id="L447">				final int value = (int) task.getProgressValue();</span>
+<span class="nc" id="L448">				final int max = (int) task.getProgressMaximum();</span>
+<span class="nc" id="L449">				final String message = task.getStatusMessage();</span>
+<span class="nc" id="L450">				update(value, max, message);</span>
+			}
+<span class="nc" id="L452">		}</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

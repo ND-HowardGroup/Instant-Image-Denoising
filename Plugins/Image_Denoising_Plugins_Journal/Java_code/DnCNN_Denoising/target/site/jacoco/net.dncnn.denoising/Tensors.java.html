@@ -1,0 +1,1115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Tensors.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DnCNN_Denoising</a> &gt; <a href="index.source.html" class="el_package">net.dncnn.denoising</a> &gt; <span class="el_source">Tensors.java</span></div><h1>Tensors.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2017 Board of Regents of the University of Notre Dame Electrical Engineering
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.dncnn.denoising;
+
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
+import org.tensorflow.DataType;
+import org.tensorflow.Tensor;
+import org.tensorflow.types.UInt8;
+
+import net.imglib2.Cursor;
+import net.imglib2.Dimensions;
+import net.imglib2.FinalDimensions;
+import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgView;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.basictypeaccess.array.ByteArray;
+import net.imglib2.img.basictypeaccess.array.DoubleArray;
+import net.imglib2.img.basictypeaccess.array.FloatArray;
+import net.imglib2.img.basictypeaccess.array.IntArray;
+import net.imglib2.img.basictypeaccess.array.LongArray;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.ByteType;
+import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.LongType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
+import net.imglib2.view.Views;
+
+/**
+ * Utility class for working with TensorFlow {@link Tensor} objects. In
+ * particular, this class provides methods for converting between ImgLib2 data
+ * structures and TensorFlow {@link Tensor}s.
+ *
+ * @author Varun Mannam
+ */
+public final class Tensors 
+{
+
+	private Tensors() 
+	{
+		// NB: Prevent instantiation of utility class.
+	}
+
+	// --------- TENSOR to RAI ---------
+
+	// NB: The following &quot;agnostic&quot; API is somehow bad due to recursive generics.
+	// The Img&lt;?&gt; sucks because we don't know it's RealType.
+	// But &quot;? extends RealType&lt;?&gt;&quot; is also a problem because ?s don't match.
+	// And putting a T param here breaks things downstream: calling code
+	// has not T context and so you can assign things to improper types.
+//	public static Img&lt;?&gt; img(final Tensor image) {
+//		switch (image.dataType()) {
+//			case BOOL:
+//				return imgBool(image);
+//			case DOUBLE:
+//				return imgDouble(image);
+//			case FLOAT:
+//				return imgFloat(image);
+//			case INT32:
+//				return imgInt(image);
+//			case INT64:
+//				return imgLong(image);
+//			case STRING:
+//				return imgString(image);
+//			case UINT8:
+//				return imgByte(image);
+//			default:
+//				throw new UnsupportedOperationException();
+//		}
+//	}
+
+	/**
+	 * Creates an image of type {@link ByteType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#UINT8}.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting image will have dimensions corresponding to the reversed
+	 * shape of the Tensor. See {@link #imgByteDirect(Tensor)} and
+	 * {@link #imgByte(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Note also that no exception is thrown if the data type is not
+	 * {@link DataType#UINT8} but it will give unexpected results.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 */
+	public static Img&lt;ByteType&gt; imgByte(final Tensor&lt;UInt8&gt; image) 
+	{
+<span class="fc" id="L130">		final byte[] out = new byte[image.numElements()];</span>
+<span class="fc" id="L131">		image.writeTo(ByteBuffer.wrap(out));</span>
+<span class="fc" id="L132">		return ArrayImgs.bytes(out, shape(image));</span>
+	}
+
+	/**
+	 * Creates an image of type {@link DoubleType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#DOUBLE}.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting image will have dimensions corresponding to the reversed
+	 * shape of the Tensor. See {@link #imgByteDirect(Tensor)} and
+	 * {@link #imgByte(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not double.
+	 */
+	public static Img&lt;DoubleType&gt; imgDouble(final Tensor&lt;Double&gt; image) 
+	{
+<span class="fc" id="L151">		final double[] out = new double[image.numElements()];</span>
+<span class="fc" id="L152">		image.writeTo(DoubleBuffer.wrap(out));</span>
+<span class="fc" id="L153">		return ArrayImgs.doubles(out, shape(image));</span>
+	}
+
+	/**
+	 * Creates an image of type {@link FloatType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#FLOAT}.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting image will have dimensions corresponding to the reversed
+	 * shape of the Tensor. See {@link #imgByteDirect(Tensor)} and
+	 * {@link #imgByte(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not float.
+	 */
+	public static Img&lt;FloatType&gt; imgFloat(final Tensor&lt;Float&gt; image) 
+	{
+<span class="fc" id="L172">		final float[] out = new float[image.numElements()];</span>
+<span class="fc" id="L173">		image.writeTo(FloatBuffer.wrap(out));</span>
+<span class="fc" id="L174">		return ArrayImgs.floats(out, shape(image));</span>
+	}
+        
+        
+
+	/**
+	 * Creates an image of type {@link IntType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#INT32}.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting image will have dimensions corresponding to the reversed
+	 * shape of the Tensor. See {@link #imgByteDirect(Tensor)} and
+	 * {@link #imgByte(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not int.
+	 */
+	public static Img&lt;IntType&gt; imgInt(final Tensor&lt;Integer&gt; image) 
+	{
+<span class="fc" id="L195">		final int[] out = new int[image.numElements()];</span>
+<span class="fc" id="L196">		image.writeTo(IntBuffer.wrap(out));</span>
+<span class="fc" id="L197">		return ArrayImgs.ints(out, shape(image));</span>
+	}
+
+	/**
+	 * Creates an image of type {@link LongType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#INT64}.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting image will have dimensions corresponding to the reversed
+	 * shape of the Tensor. See {@link #imgByteDirect(Tensor)} and
+	 * {@link #imgByte(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not long.
+	 */
+	public static Img&lt;LongType&gt; imgLong(final Tensor&lt;Long&gt; image) 
+	{
+<span class="fc" id="L216">		final long[] out = new long[image.numElements()];</span>
+<span class="fc" id="L217">		image.writeTo(LongBuffer.wrap(out));</span>
+<span class="fc" id="L218">		return ArrayImgs.longs(out, shape(image));</span>
+	}
+
+	/**
+	 * Creates an image of type {@link ByteType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#UINT8}.
+	 * &lt;p&gt;
+	 * Note that no exception is thrown if the data type is not {@link DataType#UINT8}
+	 * but it will give unexpected results.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return An image containing the data of the Tensor.
+	 */
+	public static Img&lt;ByteType&gt; imgByte(final Tensor&lt;UInt8&gt; image, int[] dimOrder) 
+	{
+<span class="fc" id="L237">		return reverseReorder(reverse(imgByte(image)), dimOrder);</span>
+	}
+
+	/**
+	 * Creates an image of type {@link DoubleType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#DOUBLE}.
+	 * 
+	 * @param image The TensorFlow Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not double.
+	 */
+	public static Img&lt;DoubleType&gt; imgDouble(final Tensor&lt;Double&gt; image, int[] dimOrder) 
+	{
+<span class="fc" id="L254">		return reverseReorder(reverse(imgDouble(image)), dimOrder);</span>
+	}
+
+	/**
+	 * Creates an image of type {@link FloatType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#FLOAT}.
+	 * 
+	 * @param image The TensorFlow Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not float.
+	 */
+	public static Img&lt;FloatType&gt; imgFloat(final Tensor&lt;Float&gt; image, int[] dimOrder) {
+<span class="fc" id="L270">		return reverseReorder(reverse(imgFloat(image)), dimOrder);</span>
+	}
+        
+        
+
+	/**
+	 * Creates an image of type {@link IntType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#INT32}.
+	 * 
+	 * @param image The TensorFlow Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not int.
+	 */
+	public static Img&lt;IntType&gt; imgInt(final Tensor&lt;Integer&gt; image, int[] dimOrder) 
+	{
+<span class="fc" id="L289">		return reverseReorder(reverse(imgInt(image)), dimOrder);</span>
+	}
+
+	/**
+	 * Creates an image of type {@link LongType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#INT64}.
+	 * 
+	 * @param image The TensorFlow Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not long.
+	 */
+	public static Img&lt;LongType&gt; imgLong(final Tensor&lt;Long&gt; image, int[] dimOrder) 
+	{
+<span class="fc" id="L306">		return reverseReorder(reverse(imgLong(image)), dimOrder);</span>
+	}
+
+	/**
+	 * Creates an image of type {@link ByteType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#UINT8}.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting image will have dimensions directly corresponding to the
+	 * shape of the Tensor. See {@link #imgByte(Tensor)} and
+	 * {@link #imgByte(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Note also that no exception is thrown if the data type is not
+	 * {@link DataType#UINT8} but it will give unexpected results.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 */
+	public static Img&lt;ByteType&gt; imgByteDirect(final Tensor&lt;UInt8&gt; image) 
+	{
+<span class="fc" id="L327">		return reverse(imgByte(image));</span>
+	}
+
+	/**
+	 * Creates an image of type {@link DoubleType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#DOUBLE}.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting image will have dimensions directly corresponding to the
+	 * shape of the Tensor. See {@link #imgDouble(Tensor)} and
+	 * {@link #imgDouble(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not double.
+	 */
+	public static Img&lt;DoubleType&gt; imgDoubleDirect(final Tensor&lt;Double&gt; image) 
+	{
+<span class="fc" id="L346">		return reverse(imgDouble(image));</span>
+	}
+
+	/**
+	 * Creates an image of type {@link FloatType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#FLOAT}.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting image will have dimensions directly corresponding to the
+	 * shape of the Tensor.  See {@link #imgFloat(Tensor)} and
+	 * {@link #imgFloat(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not float.
+	 */
+	public static Img&lt;FloatType&gt; imgFloatDirect(final Tensor&lt;Float&gt; image) 
+	{
+<span class="fc" id="L365">		return reverse(imgFloat(image));</span>
+	}
+
+	/**
+	 * Creates an image of type {@link IntType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#INT32}.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting image will have dimensions directly corresponding to the
+	 * shape of the Tensor. See {@link #imgInt(Tensor)} and
+	 * {@link #imgInt(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not int.
+	 */
+	public static Img&lt;IntType&gt; imgIntDirect(final Tensor&lt;Integer&gt; image) 
+	{
+<span class="fc" id="L384">		return reverse(imgInt(image));</span>
+	}
+
+	/**
+	 * Creates an image of type {@link LongType} containing the data of a
+	 * TensorFlow Tensor with the data type {@link DataType#INT64}.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting image will have dimensions directly corresponding to the
+	 * shape of the Tensor. See {@link #imgLong(Tensor)} and
+	 * {@link #imgLong(Tensor, int[])} if you want to handle dimensions
+	 * differently.
+	 * &lt;/p&gt;
+	 * @param image The TensorFlow Tensor.
+	 * @return An image containing the data of the Tensor.
+	 * @throws IllegalArgumentException if Tensor data type is not long.
+	 */
+	public static Img&lt;LongType&gt; imgLongDirect(final Tensor&lt;Long&gt; image) 
+	{
+<span class="fc" id="L403">		return reverse(imgLong(image));</span>
+	}
+
+	// --------- RAI to TENSOR ---------
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given image.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting Tensor will have a shape corresponding to the reversed
+	 * dimensions of the image. This is probably what you want because
+	 * TensorFlow uses the dimension order CYX while ImageJ uses XYC. See
+	 * {@link #tensorDirect(RandomAccessibleInterval)} and
+	 * {@link #tensor(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 * @throws IllegalArgumentException if the type of the image is not supported.
+	 *          Supported types are {@link ByteType}, {@link DoubleType},
+	 *          {@link FloatType}, {@link IntType} and {@link LongType}.
+	 */
+	public static &lt;T extends RealType&lt;T&gt;&gt; Tensor&lt;?&gt; tensor(
+		final RandomAccessibleInterval&lt;T&gt; image)
+	{
+		// NB: In the functions called we use reversed dimensions because
+		// tensorflow iterates the array differently than imglib2.
+		// Example: array: [ 1, 2, 3, 4, 5, 6 ], shape: [ 3, 2 ]
+		// imglib2      tensorflow
+		// | 1 2 3 |    | 1 3 5 |
+		// | 4 5 6 |    | 2 4 6 |
+
+<span class="fc" id="L438">		final T type = Util.getTypeFromInterval(image);</span>
+<span class="fc bfc" id="L439" title="All 2 branches covered.">		if (type instanceof ByteType) {</span>
+			@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L441">			final RandomAccessibleInterval&lt;ByteType&gt; typedImage =</span>
+<span class="fc" id="L442">				(RandomAccessibleInterval&lt;ByteType&gt;) image;</span>
+<span class="fc" id="L443">			return tensorByte(typedImage);</span>
+		}
+<span class="fc bfc" id="L445" title="All 2 branches covered.">		if (type instanceof DoubleType) {</span>
+			@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L447">			final RandomAccessibleInterval&lt;DoubleType&gt; typedImage =</span>
+<span class="fc" id="L448">				(RandomAccessibleInterval&lt;DoubleType&gt;) image;</span>
+<span class="fc" id="L449">			return tensorDouble(typedImage);</span>
+		}
+<span class="fc bfc" id="L451" title="All 2 branches covered.">		if (type instanceof FloatType) {</span>
+			@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L453">			final RandomAccessibleInterval&lt;FloatType&gt; typedImage =</span>
+<span class="fc" id="L454">				(RandomAccessibleInterval&lt;FloatType&gt;) image;</span>
+<span class="fc" id="L455">			return tensorFloat(typedImage);</span>
+		}
+<span class="fc bfc" id="L457" title="All 2 branches covered.">		if (type instanceof IntType) {</span>
+			@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L459">			final RandomAccessibleInterval&lt;IntType&gt; typedImage =</span>
+<span class="fc" id="L460">				(RandomAccessibleInterval&lt;IntType&gt;) image;</span>
+<span class="fc" id="L461">			return tensorInt(typedImage);</span>
+		}
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">		if (type instanceof LongType) {</span>
+			@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L465">			final RandomAccessibleInterval&lt;LongType&gt; typedImage =</span>
+<span class="fc" id="L466">				(RandomAccessibleInterval&lt;LongType&gt;) image;</span>
+<span class="fc" id="L467">			return tensorLong(typedImage);</span>
+		}
+<span class="nc" id="L469">		throw new IllegalArgumentException(&quot;Unsupported image type: &quot; + //</span>
+<span class="nc" id="L470">			type.getClass().getName());</span>
+	}
+
+	// &quot;higher level&quot; routines that give ways of adjusting dimension order
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given image.
+	 * &lt;p&gt;
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 * @throws IllegalArgumentException if the type of the image is not supported.
+	 *          Supported types are {@link ByteType}, {@link DoubleType},
+	 *          {@link FloatType}, {@link IntType} and {@link LongType}.
+	 */
+	public static &lt;T extends RealType&lt;T&gt;&gt; Tensor&lt;?&gt; tensor(
+		final RandomAccessibleInterval&lt;T&gt; image, int[] dimOrder)
+	{
+		// TODO Are 2 calls bad? More views are created but they should be smart
+		// about this
+<span class="fc" id="L496">		return tensor(reverse(reorder(image, dimOrder)));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given image.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensor(RandomAccessibleInterval)} and
+	 * {@link #tensor(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 * @throws IllegalArgumentException if the type of the image is not supported.
+	 *          Supported types are {@link ByteType}, {@link DoubleType},
+	 *          {@link FloatType}, {@link IntType} and {@link LongType}.
+	 */
+	public static &lt;T extends RealType&lt;T&gt;&gt; Tensor&lt;?&gt; tensorDirect(
+		final RandomAccessibleInterval&lt;T&gt; image)
+	{
+<span class="fc" id="L521">		return tensor(reverse(image));</span>
+	}
+
+	// &quot;low level&quot; methods that do NOT adjust dimensions
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given byte image.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting Tensor will have a shape corresponding to the reversed
+	 * dimensions of the image.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;UInt8&gt; tensorByte(
+		final RandomAccessibleInterval&lt;ByteType&gt; image)
+	{
+<span class="fc" id="L542">		final byte[] value = byteArray(image);</span>
+<span class="fc" id="L543">		ByteBuffer buffer = ByteBuffer.wrap(value);</span>
+<span class="fc" id="L544">		return Tensor.create(UInt8.class, shape(image), buffer);</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given double image.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting Tensor will have a shape corresponding to the reversed
+	 * dimensions of the image.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Double&gt; tensorDouble(
+		final RandomAccessibleInterval&lt;DoubleType&gt; image)
+	{
+<span class="fc" id="L563">		final double[] value = doubleArray(image);</span>
+<span class="fc" id="L564">		DoubleBuffer buffer = DoubleBuffer.wrap(value);</span>
+<span class="fc" id="L565">		return Tensor.create(shape(image), buffer);</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given float image.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting Tensor will have a shape corresponding to the reversed
+	 * dimensions of the image.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Float&gt; tensorFloat(
+		final RandomAccessibleInterval&lt;FloatType&gt; image)
+	{
+<span class="fc" id="L584">		final float[] value = floatArray(image);</span>
+<span class="fc" id="L585">		FloatBuffer buffer = FloatBuffer.wrap(value);</span>
+<span class="fc" id="L586">		return Tensor.create(shape(image), buffer);</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given int image.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting Tensor will have a shape corresponding to the reversed
+	 * dimensions of the image.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Integer&gt; tensorInt(
+		final RandomAccessibleInterval&lt;IntType&gt; image)
+	{
+<span class="fc" id="L605">		final int[] value = intArray(image);</span>
+<span class="fc" id="L606">		IntBuffer buffer = IntBuffer.wrap(value);</span>
+<span class="fc" id="L607">		return Tensor.create(shape(image), buffer);</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given long image.
+	 * &lt;p&gt;
+	 * Note that this does _not_ adjust any dimensions. This means that
+	 * the resulting Tensor will have a shape corresponding to the reversed
+	 * dimensions of the image.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Long&gt; tensorLong(
+		final RandomAccessibleInterval&lt;LongType&gt; image)
+	{
+<span class="fc" id="L626">		final long[] value = longArray(image);</span>
+<span class="fc" id="L627">		LongBuffer buffer = LongBuffer.wrap(value);</span>
+<span class="fc" id="L628">		return Tensor.create(shape(image), buffer);</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given byte image.
+	 * &lt;p&gt;
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;UInt8&gt; tensorByte(
+		final RandomAccessibleInterval&lt;ByteType&gt; image, final int[] dimOrder)
+	{
+<span class="fc" id="L647">		return tensorByte(reverse(reorder(image, dimOrder)));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given double image.
+	 * &lt;p&gt;
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Double&gt; tensorDouble(
+		final RandomAccessibleInterval&lt;DoubleType&gt; image, final int[] dimOrder)
+	{
+<span class="fc" id="L666">		return tensorDouble(reverse(reorder(image, dimOrder)));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given float image.
+	 * &lt;p&gt;
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Float&gt; tensorFloat(
+		final RandomAccessibleInterval&lt;FloatType&gt; image, final int[] dimOrder)
+	{
+<span class="fc" id="L685">		return tensorFloat(reverse(reorder(image, dimOrder)));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given int image.
+	 * &lt;p&gt;
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Integer&gt; tensorInt(
+		final RandomAccessibleInterval&lt;IntType&gt; image, final int[] dimOrder)
+	{
+<span class="fc" id="L704">		return tensorInt(reverse(reorder(image, dimOrder)));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given long image.
+	 * &lt;p&gt;
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Long&gt; tensorLong(
+		final RandomAccessibleInterval&lt;LongType&gt; image, final int[] dimOrder)
+	{
+<span class="fc" id="L723">		return tensorLong(reverse(reorder(image, dimOrder)));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given byte image.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorByte(RandomAccessibleInterval)} and
+	 * {@link #tensorByte(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;UInt8&gt; tensorByteDirect(
+		final RandomAccessibleInterval&lt;ByteType&gt; image)
+	{
+<span class="fc" id="L745">		return tensorByte(reverse(image));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given double image.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorDouble(RandomAccessibleInterval)} and
+	 * {@link #tensorDouble(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Double&gt; tensorDoubleDirect(
+		final RandomAccessibleInterval&lt;DoubleType&gt; image)
+	{
+<span class="fc" id="L767">		return tensorDouble(reverse(image));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given float image.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorFloat(RandomAccessibleInterval)} and
+	 * {@link #tensorFloat(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Float&gt; tensorFloatDirect(
+		final RandomAccessibleInterval&lt;FloatType&gt; image)
+	{
+<span class="fc" id="L789">		return tensorFloat(reverse(image));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given int image.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorInt(RandomAccessibleInterval)} and
+	 * {@link #tensorInt(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Integer&gt; tensorIntDirect(
+		final RandomAccessibleInterval&lt;IntType&gt; image)
+	{
+<span class="fc" id="L811">		return tensorInt(reverse(image));</span>
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given long image.
+	 * &lt;p&gt;
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorLong(RandomAccessibleInterval)} and
+	 * {@link #tensorLong(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * &lt;/p&gt;&lt;p&gt;
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * &lt;/p&gt;
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor&lt;Long&gt; tensorLongDirect(
+		final RandomAccessibleInterval&lt;LongType&gt; image)
+	{
+<span class="fc" id="L833">		return tensorLong(reverse(image));</span>
+	}
+
+	// --------- DIMENSIONAL HELPER METHODS ---------
+
+	/**
+	 * Gets the TensorFlow shape of an image. This is the same as the image's
+	 * dimension lengths, but in reversed order.
+	 * 
+	 * @param image The image whose shape is desired.
+	 * @return The TensorFlow shape.
+	 */
+	private static long[] shape(final Dimensions image) {
+<span class="fc" id="L846">		long[] shape = new long[image.numDimensions()];</span>
+<span class="fc bfc" id="L847" title="All 2 branches covered.">		for (int d = 0; d &lt; shape.length; d++) {</span>
+<span class="fc" id="L848">			shape[d] = image.dimension(shape.length - d - 1);</span>
+		}
+<span class="fc" id="L850">		return shape;</span>
+	}
+
+	/**
+	 * Gets the imglib dimension length of a tensor. This is the same as the
+	 * tensor's shape but in reversed order.
+	 * 
+	 * @param tensor The tensor whose dimension length are desired.
+	 * @return The imglib dimension length.
+	 */
+	private static long[] shape(final Tensor&lt;?&gt; tensor) {
+<span class="fc" id="L861">		return shape(new FinalDimensions(tensor.shape()));</span>
+	}
+
+	/** Flips all dimensions {@code d0,d1,...,dn -&gt; dn,...,d1,d0}. */
+	public static &lt;T extends RealType&lt;T&gt;&gt; Img&lt;T&gt; reverse(Img&lt;T&gt; image)
+	{
+<span class="fc" id="L867">		RandomAccessibleInterval&lt;T&gt; reversed = reverse((RandomAccessibleInterval&lt;T&gt;) image);</span>
+<span class="fc" id="L868">		return ImgView.wrap(reversed, image.factory());</span>
+	}
+
+	/** Flips all dimensions {@code d0,d1,...,dn -&gt; dn,...,d1,d0}. */
+	public static &lt;T extends RealType&lt;T&gt;&gt; RandomAccessibleInterval&lt;T&gt; reverse(
+		RandomAccessibleInterval&lt;T&gt; image)
+	{
+<span class="fc" id="L875">		RandomAccessibleInterval&lt;T&gt; reversed = image;</span>
+<span class="fc bfc" id="L876" title="All 2 branches covered.">		for (int d = 0; d &lt; image.numDimensions() / 2; d++) {</span>
+<span class="fc" id="L877">			reversed = Views.permute(reversed, d, image.numDimensions() - d - 1);</span>
+		}
+<span class="fc" id="L879">		return reversed;</span>
+	}
+
+	private static &lt;T extends RealType&lt;T&gt;&gt; Img&lt;T&gt; reorder(
+		Img&lt;T&gt; image, int[] dimOrder)
+	{
+<span class="fc" id="L885">		RandomAccessibleInterval&lt;T&gt; result = reorder((RandomAccessibleInterval&lt;T&gt;) image, dimOrder);</span>
+<span class="fc" id="L886">		return ImgView.wrap(result, image.factory());</span>
+	}
+
+	private static &lt;T extends RealType&lt;T&gt;&gt; RandomAccessibleInterval&lt;T&gt; reorder(
+		RandomAccessibleInterval&lt;T&gt; image, int[] dimOrder)
+	{
+<span class="fc" id="L892">		RandomAccessibleInterval&lt;T&gt; output = image;</span>
+
+		// Array which contains for each dimension information on which dimension it is right now
+<span class="fc" id="L895">		int[] moved = IntStream.range(0, image.numDimensions()).toArray();</span>
+
+		// Loop over all dimensions and move it to the right spot
+<span class="fc bfc" id="L898" title="All 2 branches covered.">		for (int i = 0; i &lt; image.numDimensions(); i++) {</span>
+<span class="fc" id="L899">			int from = moved[i];</span>
+<span class="fc" id="L900">			int to = dimOrder[i];</span>
+
+			// Move the dimension to the right dimension
+<span class="fc" id="L903">			output = Views.permute(output, from, to);</span>
+
+			// Now we have to update which dimension was moved where
+<span class="fc" id="L906">			moved[i] = to;</span>
+<span class="fc bfc" id="L907" title="All 2 branches covered.">			moved = Arrays.stream(moved).map(v -&gt; v == to ? from : v).toArray();</span>
+		}
+<span class="fc" id="L909">		return output;</span>
+	}
+
+	private static &lt;T extends RealType&lt;T&gt;&gt; Img&lt;T&gt; reverseReorder(Img&lt;T&gt; image, int[] dimOrder) {
+<span class="fc" id="L913">		int[] reverseDimOrder = new int[dimOrder.length];</span>
+<span class="fc bfc" id="L914" title="All 2 branches covered.">		for (int i = 0; i &lt; dimOrder.length; i++) {</span>
+<span class="fc" id="L915">			reverseDimOrder[dimOrder[i]] = i;</span>
+		}
+<span class="fc" id="L917">		return reorder(image, reverseDimOrder);</span>
+	}
+
+	// --------- HELPER STUFF ---------
+
+	// TODO: consider also putting this outside Tensors, and instead in ImgLib2 core.
+	// _Maybe_ mix with extractFloatArray? Probably better to keep separate layer though.
+	// This is really &quot;extract or create float array&quot;
+	// So maybe we want a &quot;createFloatArray&quot; which _always_ does the copy.
+	// And the a nice &quot;extractOrCreate&quot; guy that calls extract followed by create
+	// as is done here.
+
+	private static byte[] byteArray(
+		final RandomAccessibleInterval&lt;ByteType&gt; image)
+	{
+<span class="fc" id="L932">		final byte[] array = extractByteArray(image);</span>
+<span class="fc bfc" id="L933" title="All 2 branches covered.">		return array == null ? createByteArray(image) : array;</span>
+	}
+
+	private static double[] doubleArray(
+		final RandomAccessibleInterval&lt;DoubleType&gt; image)
+	{
+<span class="fc" id="L939">		final double[] array = extractDoubleArray(image);</span>
+<span class="fc bfc" id="L940" title="All 2 branches covered.">		return array == null ? createDoubleArray(image) : array;</span>
+	}
+
+	private static float[] floatArray(
+		final RandomAccessibleInterval&lt;FloatType&gt; image)
+	{
+<span class="fc" id="L946">		final float[] array = extractFloatArray(image);</span>
+<span class="fc bfc" id="L947" title="All 2 branches covered.">		return array == null ? createFloatArray(image) : array;</span>
+	}
+
+	private static int[] intArray(
+		final RandomAccessibleInterval&lt;IntType&gt; image)
+	{
+<span class="fc" id="L953">		final int[] array = extractIntArray(image);</span>
+<span class="fc bfc" id="L954" title="All 2 branches covered.">		return array == null ? createIntArray(image) : array;</span>
+	}
+
+	private static long[] longArray(
+		final RandomAccessibleInterval&lt;LongType&gt; image)
+	{
+<span class="fc" id="L960">		final long[] array = extractLongArray(image);</span>
+<span class="fc bfc" id="L961" title="All 2 branches covered.">		return array == null ? createLongArray(image) : array;</span>
+	}
+
+	private static byte[] createByteArray(
+		final RandomAccessibleInterval&lt;ByteType&gt; image)
+	{
+<span class="fc" id="L967">		final long[] dims = Intervals.dimensionsAsLongArray(image);</span>
+<span class="fc" id="L968">		final ArrayImg&lt;ByteType, ByteArray&gt; dest = ArrayImgs.bytes(dims);</span>
+<span class="fc" id="L969">		copy(image, dest);</span>
+<span class="fc" id="L970">		return dest.update(null).getCurrentStorageArray();</span>
+	}
+
+	private static double[] createDoubleArray(
+		final RandomAccessibleInterval&lt;DoubleType&gt; image)
+	{
+<span class="fc" id="L976">		final long[] dims = Intervals.dimensionsAsLongArray(image);</span>
+<span class="fc" id="L977">		final ArrayImg&lt;DoubleType, DoubleArray&gt; dest = ArrayImgs.doubles(dims);</span>
+<span class="fc" id="L978">		copy(image, dest);</span>
+<span class="fc" id="L979">		return dest.update(null).getCurrentStorageArray();</span>
+	}
+
+	private static float[] createFloatArray(
+		final RandomAccessibleInterval&lt;FloatType&gt; image)
+	{
+<span class="fc" id="L985">		final long[] dims = Intervals.dimensionsAsLongArray(image);</span>
+<span class="fc" id="L986">		final ArrayImg&lt;FloatType, FloatArray&gt; dest = ArrayImgs.floats(dims);</span>
+<span class="fc" id="L987">		copy(image, dest);</span>
+<span class="fc" id="L988">		return dest.update(null).getCurrentStorageArray();</span>
+	}
+
+	private static int[] createIntArray(
+		final RandomAccessibleInterval&lt;IntType&gt; image)
+	{
+<span class="fc" id="L994">		final long[] dims = Intervals.dimensionsAsLongArray(image);</span>
+<span class="fc" id="L995">		final ArrayImg&lt;IntType, IntArray&gt; dest = ArrayImgs.ints(dims);</span>
+<span class="fc" id="L996">		copy(image, dest);</span>
+<span class="fc" id="L997">		return dest.update(null).getCurrentStorageArray();</span>
+	}
+
+	private static long[] createLongArray(
+		final RandomAccessibleInterval&lt;LongType&gt; image)
+	{
+<span class="fc" id="L1003">		final long[] dims = Intervals.dimensionsAsLongArray(image);</span>
+<span class="fc" id="L1004">		final ArrayImg&lt;LongType, LongArray&gt; dest = ArrayImgs.longs(dims);</span>
+<span class="fc" id="L1005">		copy(image, dest);</span>
+<span class="fc" id="L1006">		return dest.update(null).getCurrentStorageArray();</span>
+	}
+
+	private static byte[] extractByteArray(
+		final RandomAccessibleInterval&lt;ByteType&gt; image)
+	{
+<span class="fc bfc" id="L1012" title="All 2 branches covered.">		if (!(image instanceof ArrayImg)) return null;</span>
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L1014">		final ArrayImg&lt;ByteType, ?&gt; arrayImg = (ArrayImg&lt;ByteType, ?&gt;) image;</span>
+<span class="fc" id="L1015">		final Object dataAccess = arrayImg.update(null);</span>
+<span class="pc bpc" id="L1016" title="1 of 2 branches missed.">		return dataAccess instanceof ByteArray ? //</span>
+<span class="pc" id="L1017">			((ByteArray) dataAccess).getCurrentStorageArray() : null;</span>
+	}
+
+	private static double[] extractDoubleArray(
+		final RandomAccessibleInterval&lt;DoubleType&gt; image)
+	{
+<span class="fc bfc" id="L1023" title="All 2 branches covered.">		if (!(image instanceof ArrayImg)) return null;</span>
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L1025">		final ArrayImg&lt;DoubleType, ?&gt; arrayImg = (ArrayImg&lt;DoubleType, ?&gt;) image;</span>
+<span class="fc" id="L1026">		final Object dataAccess = arrayImg.update(null);</span>
+<span class="pc bpc" id="L1027" title="1 of 2 branches missed.">		return dataAccess instanceof DoubleArray ? //</span>
+<span class="pc" id="L1028">			((DoubleArray) dataAccess).getCurrentStorageArray() : null;</span>
+	}
+
+	private static float[] extractFloatArray(
+		final RandomAccessibleInterval&lt;FloatType&gt; image)
+	{
+<span class="fc bfc" id="L1034" title="All 2 branches covered.">		if (!(image instanceof ArrayImg)) return null;</span>
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L1036">		final ArrayImg&lt;FloatType, ?&gt; arrayImg = (ArrayImg&lt;FloatType, ?&gt;) image;</span>
+		// GOOD NEWS: float[] rasterization order is dimension-wise!
+		// BAD NEWS: it always goes d0,d1,d2,.... is that the order we need?
+		// MORE BAD NEWS: As soon as you use Views.permute, image is not ArrayImg anymore.
+		// SO: This only works if you give a RAI that happens to be laid out directly as TensorFlow desires.
+<span class="fc" id="L1041">		final Object dataAccess = arrayImg.update(null);</span>
+<span class="pc bpc" id="L1042" title="1 of 2 branches missed.">		return dataAccess instanceof FloatArray ? //</span>
+<span class="pc" id="L1043">			((FloatArray) dataAccess).getCurrentStorageArray() : null;</span>
+	}
+
+	private static int[] extractIntArray(
+		final RandomAccessibleInterval&lt;IntType&gt; image)
+	{
+<span class="fc bfc" id="L1049" title="All 2 branches covered.">		if (!(image instanceof ArrayImg)) return null;</span>
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L1051">		final ArrayImg&lt;IntType, ?&gt; arrayImg = (ArrayImg&lt;IntType, ?&gt;) image;</span>
+<span class="fc" id="L1052">		final Object dataAccess = arrayImg.update(null);</span>
+<span class="pc bpc" id="L1053" title="1 of 2 branches missed.">		return dataAccess instanceof IntArray ? //</span>
+<span class="pc" id="L1054">			((IntArray) dataAccess).getCurrentStorageArray() : null;</span>
+	}
+
+	private static long[] extractLongArray(
+		final RandomAccessibleInterval&lt;LongType&gt; image)
+	{
+<span class="fc bfc" id="L1060" title="All 2 branches covered.">		if (!(image instanceof ArrayImg)) return null;</span>
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L1062">		final ArrayImg&lt;LongType, ?&gt; arrayImg = (ArrayImg&lt;LongType, ?&gt;) image;</span>
+<span class="fc" id="L1063">		final Object dataAccess = arrayImg.update(null);</span>
+<span class="pc bpc" id="L1064" title="1 of 2 branches missed.">		return dataAccess instanceof LongArray ? //</span>
+<span class="pc" id="L1065">			((LongArray) dataAccess).getCurrentStorageArray() : null;</span>
+	}
+
+	private static &lt;T extends RealType&lt;T&gt;&gt; void copy(
+		final RandomAccessibleInterval&lt;T&gt; source,
+		final IterableInterval&lt;T&gt; dest)
+	{
+<span class="fc" id="L1072">		final RandomAccess&lt;T&gt; sourceAccess = source.randomAccess();</span>
+<span class="fc" id="L1073">		final Cursor&lt;T&gt; destCursor = dest.localizingCursor();</span>
+<span class="fc bfc" id="L1074" title="All 2 branches covered.">		while (destCursor.hasNext()) {</span>
+<span class="fc" id="L1075">			destCursor.fwd();</span>
+<span class="fc" id="L1076">			sourceAccess.setPosition(destCursor);</span>
+<span class="fc" id="L1077">			destCursor.get().set(sourceAccess.get());</span>
+		}
+<span class="fc" id="L1079">	}</span>
+        
+    public static float max_image(final RandomAccessibleInterval&lt;FloatType&gt; ix1_m1)
+    {
+<span class="fc" id="L1083">        final float[] value_m1 = floatArray(ix1_m1);</span>
+<span class="fc" id="L1084">        final int ndims = ix1_m1.numDimensions();</span>
+<span class="fc" id="L1085">        final long[] dims = Intervals.dimensionsAsLongArray(ix1_m1);</span>
+        //System.out.println(&quot;dims are here&quot; + dims);
+<span class="fc" id="L1087">        long all_dims=1;</span>
+<span class="fc bfc" id="L1088" title="All 2 branches covered.">        for (int j=0;j&lt;ndims;j++)</span>
+        {
+<span class="fc" id="L1090">            all_dims = all_dims*dims[j];</span>
+        }
+<span class="fc" id="L1092">        float max_im = 0;</span>
+        int i;
+<span class="fc bfc" id="L1094" title="All 2 branches covered.">        for (i = 0; i &lt; all_dims; i++) </span>
+        { 
+            
+<span class="pc bpc" id="L1097" title="1 of 2 branches missed.">                if (value_m1[i]&gt; max_im)</span>
+                {
+<span class="nc" id="L1099">                        max_im = value_m1[i];</span>
+                }
+        }
+        
+        //if (max_im &gt;255) //16-bit data
+        //{
+        //    max_im = 65535;
+        //}
+        //else
+        //{
+        //    max_im = 255; //8-bit data
+        //}
+        
+<span class="fc" id="L1112">        return max_im;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

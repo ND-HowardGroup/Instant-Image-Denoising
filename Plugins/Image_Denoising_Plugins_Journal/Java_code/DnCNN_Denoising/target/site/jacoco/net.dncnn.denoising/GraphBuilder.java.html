@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GraphBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DnCNN_Denoising</a> &gt; <a href="index.source.html" class="el_package">net.dncnn.denoising</a> &gt; <span class="el_source">GraphBuilder.java</span></div><h1>GraphBuilder.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2017 Board of Regents of the University of Notre Dame Electrical Engineering
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+/**
+ * Default implementation of {@link GraphBuilder}.
+ *
+ * @author Varun Mannam
+ */
+
+package net.dncnn.denoising;
+
+import java.nio.FloatBuffer;
+
+import org.tensorflow.Graph;
+import org.tensorflow.Output;
+import org.tensorflow.Tensor;
+
+// In the fullness of time, equivalents of the methods of this class should be
+// auto-generated from the OpDefs linked into libtensorflow_jni.so. That would
+// match what is done in other languages like Python, C++ and Go.
+
+public class GraphBuilder 
+{
+
+	private final Graph g;
+
+<span class="fc" id="L52">	public GraphBuilder(final Graph g) </span>
+        {
+<span class="fc" id="L54">		this.g = g;</span>
+<span class="fc" id="L55">	}</span>
+
+	public &lt;T, U, V&gt; Output&lt;V&gt; div(final Output&lt;T&gt; x, final Output&lt;U&gt; y) 
+        {
+<span class="fc" id="L59">		return binaryOp3(&quot;Div&quot;, x, y, &quot;Div&quot;);</span>
+	}
+
+	public &lt;T, U, V&gt; Output&lt;V&gt; div(final Output&lt;T&gt; x, final Output&lt;U&gt; y, final String name)
+	{
+<span class="nc" id="L64">		return binaryOp3(&quot;Div&quot;, x, y, name);</span>
+	}
+
+	public &lt;T&gt; Output&lt;T&gt; sub(final Output&lt;T&gt; x, final Output&lt;T&gt; y) 
+        {
+<span class="fc" id="L69">		return binaryOp(&quot;Sub&quot;, x, y, &quot;Sub&quot;);</span>
+	}
+
+	public &lt;T&gt; Output&lt;T&gt; sub(final Output&lt;T&gt; x, final Output&lt;T&gt; y, final String name)
+	{
+<span class="nc" id="L74">		return binaryOp(&quot;Sub&quot;, x, y, name);</span>
+	}
+
+	public &lt;T, U, V&gt; Output&lt;V&gt; resizeBilinear(final Output&lt;T&gt; images, final Output&lt;U&gt; size)
+        {
+<span class="fc" id="L79">		return binaryOp3(&quot;ResizeBilinear&quot;, images, size, &quot;ResizeBilinear&quot;);</span>
+	}
+
+	public &lt;T, U, V&gt; Output&lt;V&gt; resizeBilinear(final Output&lt;T&gt; images, final Output&lt;U&gt; size, final String name)
+	{
+<span class="nc" id="L84">		return binaryOp3(&quot;ResizeBilinear&quot;, images, size, name);</span>
+	}
+
+	public &lt;T, U, V&gt; Output&lt;V&gt; expandDims(final Output&lt;T&gt; input, final Output&lt;U&gt; dim) 
+        {
+<span class="fc" id="L89">		return binaryOp3(&quot;ExpandDims&quot;, input, dim, &quot;ExpandDims&quot;);</span>
+	}
+
+	public &lt;T, U, V&gt; Output&lt;V&gt; expandDims(final Output&lt;T&gt; input, final Output&lt;U&gt; dim, final String name)
+	{
+<span class="nc" id="L94">		return binaryOp3(&quot;ExpandDims&quot;, input, dim, name);</span>
+	}
+
+	public Output&lt;?&gt; constant(final String name, final Object value) 
+        {
+<span class="fc" id="L99">		try (Tensor&lt;?&gt; t = Tensor.create(value)) </span>
+                {
+<span class="fc" id="L101">			return constant(name, t);</span>
+		}
+	}
+
+	public Output&lt;Float&gt; constant(final String name, final float[] value, final long... shape)
+	{
+<span class="nc" id="L107">		try (Tensor&lt;Float&gt; t = Tensor.create(shape, FloatBuffer.wrap(value))) </span>
+                {
+<span class="nc" id="L109">			return constant(name, t);</span>
+		}
+	}
+
+	public &lt;T&gt; Output&lt;T&gt; constant(final String name, final Tensor&lt;T&gt; value) 
+        {
+<span class="fc" id="L115">		return g.opBuilder(&quot;Const&quot;, name).setAttr(&quot;dtype&quot;, value.dataType()).setAttr(&quot;value&quot;, value).build().output(0);</span>
+	}
+
+	private &lt;T&gt; Output&lt;T&gt; binaryOp(final String type, final Output&lt;T&gt; in1,final Output&lt;T&gt; in2, final String name)
+	{
+<span class="fc" id="L120">		return g.opBuilder(type, name).addInput(in1).addInput(in2).build().output(0);</span>
+	}
+
+	private &lt;T, U, V&gt; Output&lt;V&gt; binaryOp3(final String type, final Output&lt;T&gt; in1,final Output&lt;U&gt; in2, final String name)
+	{
+<span class="fc" id="L125">		return g.opBuilder(type, name).addInput(in1).addInput(in2).build().output(0);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

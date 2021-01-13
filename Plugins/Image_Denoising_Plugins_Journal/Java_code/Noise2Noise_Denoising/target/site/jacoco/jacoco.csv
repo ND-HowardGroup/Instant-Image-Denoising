@@ -1,0 +1,15 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Noise2Noise_denoising,net.image.denoising.util,UnpackUtil,404,0,26,0,84,0,19,0,6,0
+Noise2Noise_denoising,net.image.denoising.util,TensorFlowUtil,290,98,28,4,56,17,20,7,5,6
+Noise2Noise_denoising,net.image.denoising.ui,DownloadableTensorFlowVersion,149,53,21,1,30,14,22,6,11,6
+Noise2Noise_denoising,net.image.denoising.ui,TensorFlowInstallationHandler,262,0,20,0,46,0,19,0,9,0
+Noise2Noise_denoising,net.image.denoising.ui,TensorFlowLibraryManagementCommand,167,0,10,0,42,0,13,0,8,0
+Noise2Noise_denoising,net.image.denoising.ui,AvailableTensorFlowVersions,11,559,0,0,6,69,1,3,1,3
+Noise2Noise_denoising,net.image.denoising.ui,TensorFlowLibraryManagementFrame,612,0,32,0,144,0,37,0,21,0
+Noise2Noise_denoising,net.image.denoising.demo,Noise2Noise_Denoising,99,432,8,8,16,78,9,8,1,8
+Noise2Noise_denoising,net.image.denoising,TensorFlowVersion,125,88,13,9,18,15,14,6,5,4
+Noise2Noise_denoising,net.image.denoising,TensorFlowLibraryStatus,24,48,3,3,4,11,7,6,4,6
+Noise2Noise_denoising,net.image.denoising,GraphBuilder,42,88,0,0,6,12,5,9,5,9
+Noise2Noise_denoising,net.image.denoising,Tensors,22,711,7,51,3,171,7,80,0,58
+Noise2Noise_denoising,net.image.denoising,DefaultTensorFlowService.StatusUpdater,91,0,4,0,21,0,7,0,5,0
+Noise2Noise_denoising,net.image.denoising,DefaultTensorFlowService,419,235,26,14,76,59,25,15,5,15

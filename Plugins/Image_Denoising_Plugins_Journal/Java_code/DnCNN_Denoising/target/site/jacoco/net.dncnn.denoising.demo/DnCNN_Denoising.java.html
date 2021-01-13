@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DnCNN_Denoising.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DnCNN_Denoising</a> &gt; <a href="index.source.html" class="el_package">net.dncnn.denoising.demo</a> &gt; <span class="el_source">DnCNN_Denoising.java</span></div><h1>DnCNN_Denoising.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2017 Board of Regents of the University of Notre Dame (Electrical Engineering).
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.dncnn.denoising.demo;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import net.dncnn.denoising.GraphBuilder;
+import net.dncnn.denoising.TensorFlowService;
+import net.dncnn.denoising.Tensors;
+import net.imagej.Dataset;
+import net.imagej.ImageJ;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
+import net.imglib2.converter.RealFloatConverter;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.Views;
+
+import org.scijava.ItemIO;
+import org.scijava.command.Command;
+import org.scijava.io.http.HTTPLocation;
+import org.scijava.log.LogService;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.tensorflow.Graph;
+import org.tensorflow.Output;
+import org.tensorflow.Session;
+import org.tensorflow.Tensor;
+
+
+// added by Varun Mannam
+import java.nio.FloatBuffer;
+import net.imglib2.Cursor;
+import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccess;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgs;
+import org.tensorflow.DataType;
+import net.imglib2.img.basictypeaccess.array.FloatArray;
+import net.imglib2.util.Intervals;
+
+/**
+ * Command to use an Image denoising model to Denoise Poisson + Gaussian noise with in an image.
+ * Author: Varun Mannam
+ * Department: Department of Electrical Engineering
+ * University: University of Notre Dame
+ * South Bend, Indiana, USA, Zip: 46656
+ */
+@Plugin(type = Command.class, menuPath = &quot;Plugins&gt; DnCNN Denoising&quot;,headless = true)
+<span class="fc" id="L82">public class DnCNN_Denoising implements Command </span>
+{
+
+	private static final String DENOISED_MODEL_URL = &quot;https://storage.googleapis.com/dncnn_ml_model_vm_01/DnCNN_ML_Model_VM_01.zip&quot;;
+
+	private static final String MODEL_NAME = &quot;DnCNN_ML_Model_VM_01&quot;;
+
+	@Parameter
+	private TensorFlowService tensorFlowService;
+
+	@Parameter
+	private static LogService log;
+
+	@Parameter
+	private Dataset inputImage;
+        
+    @Parameter(type = ItemIO.OUTPUT)
+	private Img&lt;FloatType&gt; outputImage_DnCNN_Denoised;
+	
+	private static float max_im;
+	public static String image_type; // image type: 8-bit uint, 16-bit uint, 32-bit float
+	public static long[] dims; // this is the vector
+	public static int ndims;  // n-dimensions
+	
+	@Override
+	public void run() 
+	{
+
+<span class="fc" id="L110">		tensorFlowService.loadLibrary();</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">		if(!tensorFlowService.getStatus().isLoaded()) return;</span>
+<span class="fc" id="L112">		log.info(&quot;Version of TensorFlow: &quot; + tensorFlowService.getTensorFlowVersion());</span>
+		
+		try 
+                {
+                        
+<span class="fc" id="L117">                        final HTTPLocation source = new HTTPLocation(DENOISED_MODEL_URL);</span>
+<span class="fc" id="L118">                        final Graph graph = tensorFlowService.loadGraph(source, MODEL_NAME,&quot;DnCNN_ML_Model_VM_01.pb&quot;);</span>
+                        
+<span class="fc" id="L120">                        try </span>
+                        (
+<span class="fc" id="L122">                                final Tensor&lt;Float&gt; inputTensor = loadFromImgLib(inputImage);</span>
+                        )
+
+                        {
+<span class="fc" id="L126">                                final long startMs = System.currentTimeMillis();</span>
+                                //log.info(&quot;max_value is &quot; + max_im);
+<span class="fc" id="L128">                                final Tensor&lt;Float&gt; outputTensor = process_image(inputTensor, graph, max_im);</span>
+<span class="fc" id="L129">                                final long endMs = System.currentTimeMillis();</span>
+<span class="fc" id="L130">                                log.info(&quot;Model inference time is: &quot; + (endMs - startMs) + &quot;ms, TensorFlow version: &quot; + tensorFlowService.getTensorFlowVersion());</span>
+<span class="fc" id="L131">                                outputImage_DnCNN_Denoised = Tensors.imgFloat(outputTensor, new int[]{ 2, 1, 0, 3 });</span>
+                                //reduce the dimensions based on ndims 
+                                //if (ndims ==2)
+                                //{
+                                //	outputImage_dncnn_denoised = Views.collapse(Img&lt;FloatType&gt;)(outputImage_dncnn_denoised,1,1);
+                                //			
+                                //}
+                                //outputImage_dncnn_denoised = Math.round(outputImage_dncnn_denoised);
+                                //log.info(&quot;Input image type is &quot; + d.getTypeLabelShort()); //added 1306 
+                        }
+		}
+<span class="nc" id="L142">		catch (final Exception exc) </span>
+                {
+<span class="nc" id="L144">			log.error(exc);</span>
+		}
+<span class="fc" id="L146">	}</span>
+
+	@SuppressWarnings({ &quot;rawtypes&quot;, &quot;unchecked&quot; })
+	private static Tensor&lt;Float&gt; loadFromImgLib(final Dataset d) throws IOException
+    {
+<span class="fc" id="L151">		log.info(&quot;Input image type is &quot; + d.getTypeLabelShort()+ &quot;.&quot;); //added 1306 to find the type of image d.getType() gives the first element, like 3, 771, 3.0 for 8-bit,16-bit ad 32-bit images</span>
+<span class="fc" id="L152">		image_type  = d.getTypeLabelShort();</span>
+<span class="fc" id="L153">		final RandomAccessibleInterval image = (RandomAccessibleInterval) d.getImgPlus(); //get image in randomaccessibleinterval</span>
+<span class="fc" id="L154">        ndims = image.numDimensions(); //check dimensions</span>
+<span class="pc bpc" id="L155" title="2 of 4 branches missed.">		if (ndims == 1 || ndims == 4) </span>
+        {
+<span class="nc" id="L157">			dims = new long[ndims]; //convert to array</span>
+<span class="nc" id="L158">			image.dimensions(dims);</span>
+<span class="nc" id="L159">			throw new IOException(&quot;Can only process 2D/3D images, not an image with &quot; + ndims + &quot; dimensions (&quot; + Arrays.toString(dims) + &quot;)&quot;);</span>
+         }
+<span class="fc" id="L161">         return loadFromImgLib(image); //call function to convert to tensor</span>
+	}
+
+	private static &lt;T extends RealType&lt;T&gt;&gt; Tensor&lt;Float&gt; loadFromImgLib(final RandomAccessibleInterval&lt;T&gt; image)
+	{
+		// NB: Assumes XYC ordering. TensorFlow wants YXC.
+<span class="fc" id="L167">		RealFloatConverter&lt;T&gt; converter = new RealFloatConverter&lt;&gt;();       </span>
+<span class="fc" id="L168">                RandomAccessibleInterval&lt;FloatType&gt; ix1 = Converters.convert(image,converter,new FloatType());</span>
+                
+<span class="fc" id="L170">                max_im = Tensors.max_image(ix1); //maximum of input image (255 or 65535 for 8-bit or 16-bit)</span>
+                //log.info(&quot;max_value is &quot; + max_im);
+                
+<span class="fc" id="L173">                final long dims = ix1.numDimensions();</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">                if (dims==2)</span>
+                {
+<span class="fc" id="L176">                    ix1 = Views.addDimension(ix1, 0, 0);</span>
+                } //added extra dimension
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">                if (dims==3)</span>
+                {
+<span class="nc" id="L180">                    ix1 = ix1; //no additional view to add extra dims</span>
+                }
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">                if (dims&gt;3)</span>
+                {
+<span class="nc" id="L184">                	log.info(&quot;Can only process 2D/3D images, but not an image with &quot; + dims + &quot; dimensions&quot;);</span>
+                }
+<span class="fc" id="L186">                return Tensors.tensorFloat(ix1, new int[]{ 2, 1, 0 });</span>
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// All the code below was essentially copied verbatim from:
+	// https://github.com/tensorflow/tensorflow/blob/e8f2aad0c0502fde74fc629f5b13f04d5d206700/tensorflow/java/src/main/java/org/tensorflow/examples/LabelImage.java
+	// -----------------------------------------------------------------------------------------------------------------
+	private static Tensor&lt;Float&gt; normalizeImage(final Tensor&lt;Float&gt; t, final float max_im) 
+    {
+<span class="fc" id="L195">		try (Graph g = new Graph()) </span>
+                
+		{
+<span class="fc" id="L198">			final long[] x1shape = t.shape();</span>
+			
+<span class="fc" id="L200">            final GraphBuilder b = new GraphBuilder(g);</span>
+			// Some constants specific to the pre-trained model at:
+			// https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip
+			//
+			// - The model was trained with images scaled to 224x224 pixels.
+			// - The colors, represented as R, G, B in 1-byte each were converted to
+			//   float using (value - Mean)/Scale.
+//                        final int rem1 = (int) x1shape[1] % 32;
+            final int H;
+            final int W;
+<span class="fc" id="L210">            H = (int) x1shape[1]; // no need of reshape here</span>
+<span class="fc" id="L211">            W = (int) x1shape[2];</span>
+//                        if (rem1==0)
+//                        {
+//                           H = (int) x1shape[1];
+//                        }
+//                        else 
+//                        {
+//                            H = (((int) x1shape[1]/32)+1)*32; //added extra size of resize image 
+//                        }
+			//final int H = (int) x1shape[1];  
+//                        final int rem2 = (int) x1shape[2] % 32;
+//                        if (rem2==0)
+//                        {
+//                            W = (int) x1shape[2];
+//                        }
+//                        else 
+//                        {
+//                            W = (((int) x1shape[2]/32)+1)*32; //added extra size of resize image 
+//                        }
+			//final int W = (int) x1shape[2];           
+<span class="fc" id="L231">			final float mean = (max_im/2); //changed : 1206 -&gt; old sub -0.5 value here (max_im/2); //127.5f;</span>
+<span class="fc" id="L232">			final float scale = max_im; //255f;</span>
+
+			// Since the graph is being constructed once per execution here, we can
+			// use a constant for the input image. If the graph were to be re-used for
+			// multiple input images, a placeholder would have been more appropriate.
+<span class="fc" id="L237">			final Output&lt;Float&gt; img = g.opBuilder(&quot;Const&quot;, &quot;img&quot;).setAttr(&quot;dtype&quot;, t.dataType()).setAttr(&quot;value&quot;, t).build().output(0);       </span>
+<span class="fc" id="L238">			final Output&lt;Float&gt; output = b.div(b.sub(b.resizeBilinear(b.expandDims(//</span>
+<span class="fc" id="L239">				img, //</span>
+<span class="fc" id="L240">				b.constant(&quot;make_batch&quot;, 3)), //</span>
+<span class="fc" id="L241">				b.constant(&quot;size&quot;, new int[] { H, W })), //</span>
+<span class="fc" id="L242">				b.constant(&quot;mean&quot;, mean)), //</span>
+<span class="fc" id="L243">				b.constant(&quot;scale&quot;, scale));</span>
+			
+<span class="fc" id="L245">			try (Session s = new Session(g)) </span>
+                        {
+				@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L248">				Tensor&lt;Float&gt; result = (Tensor&lt;Float&gt;) s.runner().fetch(output.op().name()).run().get(0);</span>
+<span class="fc" id="L249">				return result;</span>
+			}
+		}
+	}
+        
+        private static Tensor&lt;Float&gt; process_image(final Tensor&lt;Float&gt; tin, final Graph graph, final float max_im) //, final int dims)
+        {
+<span class="fc" id="L256">            final long[] dims_tensor = tin.shape();</span>
+<span class="fc" id="L257">            final Tensor&lt;Float&gt; image = normalizeImage(tin, max_im);</span>
+<span class="fc" id="L258">            final long startMs1 = System.currentTimeMillis();</span>
+<span class="fc" id="L259">            final Tensor&lt;Float&gt; outputImage1 = executeDnCNNDenoisingGraph(graph, image);</span>
+<span class="fc" id="L260">            final long endMs1 = System.currentTimeMillis();</span>
+            //log.info(&quot;Graph inference time is: &quot; + (endMs1 - startMs1) + &quot;ms&quot;);
+<span class="fc" id="L262">            final Tensor&lt;Float&gt; post_img = post_process(outputImage1, dims_tensor, max_im);</span>
+<span class="fc" id="L263">            return post_img;</span>
+        }
+               
+        private static Tensor&lt;Float&gt; post_process(final Tensor&lt;Float&gt; top, final long[] dims_tensor, final float max_im) 
+        {
+<span class="fc" id="L268">                try (Graph g = new Graph()) </span>
+                {
+<span class="fc" id="L270">                        final long[] x2shape = dims_tensor; //top.shape();</span>
+<span class="fc" id="L271">                        final GraphBuilder b = new GraphBuilder(g);</span>
+                        // Some constants specific to the pre-trained model at:
+                        // https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip
+                        //
+                        // - The model was trained with images scaled to 224x224 pixels.
+                        // - The colors, represented as R, G, B in 1-byte each were converted to
+                        //   float using (value - Mean)/Scale.
+<span class="fc" id="L278">                        final int H_post = (int) x2shape[1];</span>
+<span class="fc" id="L279">                        final int W_post = (int) x2shape[2];</span>
+<span class="fc" id="L280">                        final float mean = -0.5f; // -0.5f; //changed : 1206 -&gt; old sub -0.5 value here (max_im/2); </span>
+<span class="fc" id="L281">                        final float scale = (1/max_im); //0.0039215f;</span>
+
+                        // Since the graph is being constructed once per execution here, we can
+                        // use a constant for the input image. If the graph were to be re-used for
+                        // multiple input images, a placeholder would have been more appropriate.
+<span class="fc" id="L286">                        final Output&lt;Float&gt; img = g.opBuilder(&quot;Const&quot;, &quot;img&quot;).setAttr(&quot;dtype&quot;, top.dataType()).setAttr(&quot;value&quot;, top).build().output(0);       </span>
+<span class="fc" id="L287">                        final Output&lt;Float&gt; output = b.div(b.sub(b.resizeBilinear(</span>
+<span class="fc" id="L288">                                img,//</span>
+<span class="fc" id="L289">                                b.constant(&quot;size&quot;, new int[] { H_post, W_post })),//</span>
+<span class="fc" id="L290">                                b.constant(&quot;mean&quot;, mean)), //</span>
+<span class="fc" id="L291">                                b.constant(&quot;scale&quot;, scale));</span>
+                        
+<span class="fc" id="L293">                        try (Session s = new Session(g)) </span>
+                        {
+                                @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L296">                                Tensor&lt;Float&gt; result = (Tensor&lt;Float&gt;) s.runner().fetch(output.op().name()).run().get(0);</span>
+<span class="fc" id="L297">                                return result;</span>
+                        }
+                }
+        }
+
+        private static final Tensor&lt;Float&gt; executeDnCNNDenoisingGraph(final Graph g, final Tensor&lt;Float&gt; image)
+        {
+<span class="fc" id="L304">                final Session s = new Session(g);</span>
+                @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L306">                final Tensor&lt;Float&gt; result = (Tensor&lt;Float&gt;) s.runner().feed(&quot;img&quot;, image).fetch(&quot;subtract/sub&quot;).run().get(0);</span>
+<span class="fc" id="L307">                return result; </span>
+        }
+
+        public static void main(String[] args) throws IOException 
+        {
+<span class="nc" id="L312">                final ImageJ ij = new ImageJ();</span>
+<span class="nc" id="L313">                ij.launch(args);</span>
+
+                // Open an image and display it.
+<span class="nc" id="L316">                final String imagePath = &quot;/Users/varunmannam/Desktop/images_to_code/image_R_1_001_U16.png&quot;;//color_image.png&quot;;//image_R_1_001_32bits.tif&quot;;//_U16.png&quot;;//_300_pixels.png&quot;;</span>
+<span class="nc" id="L317">                final Object dataset = ij.io().open(imagePath);//ij.scifio().datasetIO().Open(imagePath); //ij.io().open(imagePath);</span>
+                //Dataset image = ij.scifio().datasetIO().Open(imagePath);
+<span class="nc" id="L319">                ij.ui().show(dataset);</span>
+                
+                // Launch the &quot;output denoising Images&quot; command with some sensible defaults.
+<span class="nc" id="L322">                ij.command().run(DnCNN_Denoising.class, true, &quot;inputImage&quot;, dataset);</span>
+<span class="nc" id="L323">        }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

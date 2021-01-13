@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TensorFlowUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Noise2Noise_denoising</a> &gt; <a href="index.source.html" class="el_package">net.image.denoising.util</a> &gt; <span class="el_source">TensorFlowUtil.java</span></div><h1>TensorFlowUtil.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2019 Board of Regents of the University of Notre Dame Electrical Engineering
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.image.denoising.util;
+
+import net.image.denoising.TensorFlowVersion;
+import net.imagej.updater.util.UpdaterUtil;
+import org.scijava.log.Logger;
+import org.tensorflow.TensorFlow;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Utility methods for dealing with the Java TensorFlow library
+ *
+ * @author Varun Mannam
+ * 
+ */
+public final class TensorFlowUtil 
+{
+
+	private static final String TFVERSIONFILE = &quot;.tensorflowversion&quot;;
+	private static final String CRASHFILE = &quot;.crashed&quot;;
+	private static final String LIBDIR = &quot;lib&quot;;
+	private static final String UPDATEDIR = &quot;update&quot;;
+
+<span class="fc" id="L63">	private static final String PLATFORM = UpdaterUtil.getPlatform();</span>
+
+<span class="fc" id="L65">	private static Pattern jarVersionPattern = Pattern.compile(&quot;(?&lt;=(libtensorflow-)).*(?=(.jar))&quot;);</span>
+
+	private TensorFlowUtil(){}
+
+	/**
+	 * @param jar the JAR file of the TensorFlow library
+	 * @return the version which will be loaded by the JAR file
+	 */
+	public static TensorFlowVersion getTensorFlowJARVersion(URL jar) 
+	{
+<span class="fc" id="L75">		Matcher matcher = jarVersionPattern.matcher(jar.getPath());</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">		if(matcher.find()) {</span>
+			// guess GPU support by looking for tensorflow_jni_gpu in the class path
+<span class="fc" id="L78">			boolean supportsGPU = false;</span>
+<span class="fc" id="L79">			ClassLoader cl = ClassLoader.getSystemClassLoader();</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">			for(URL url: ((URLClassLoader)cl).getURLs())</span>
+			{
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">				if(url.getFile().contains(&quot;libtensorflow_jni_gpu&quot;)) </span>
+				{
+<span class="nc" id="L84">					supportsGPU = true;</span>
+<span class="nc" id="L85">					break;</span>
+				}
+			}
+<span class="fc" id="L88">			return new TensorFlowVersion(matcher.group(), supportsGPU, null, null);</span>
+		}
+<span class="nc" id="L90">		return null;</span>
+	}
+
+	/**
+	 * @return The TensorFlow version included in the class path which will be loaded by default if no other native library is loaded beforehand.
+	 */
+	public static TensorFlowVersion versionFromClassPathJAR() 
+	{
+<span class="fc" id="L98">		return getTensorFlowJARVersion(getTensorFlowJAR());</span>
+	}
+
+	/**
+	 * @return The JAR file URL shipping TensorFlow in Java
+	 */
+	public static URL getTensorFlowJAR() 
+	{
+<span class="fc" id="L106">		URL resource = TensorFlow.class.getResource(&quot;TensorFlow.class&quot;);</span>
+<span class="fc" id="L107">		JarURLConnection connection = null;</span>
+		try 
+		{
+<span class="fc" id="L110">			connection = (JarURLConnection) resource.openConnection();</span>
+<span class="fc" id="L111">		} </span>
+<span class="nc" id="L112">		catch (IOException e) </span>
+		{
+<span class="nc" id="L114">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L116">		return connection.getJarFileURL();</span>
+	}
+
+	/**
+	 * Deletes all TensorFlow native library files in {@link #getLibDir(String)}.
+	 * @param root the root path of ImageJ
+	 * @param logger
+	 */
+	public static void removeNativeLibraries(String root, Logger logger)  
+	{
+<span class="nc" id="L126">		final File folder = new File(TensorFlowUtil.getLibDir(root), PLATFORM);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">		if(!folder.exists()) </span>
+		{
+<span class="nc" id="L129">			return;</span>
+		}
+<span class="nc" id="L131">		final File[] listOfFiles = folder.listFiles();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">		for (File file : listOfFiles) </span>
+		{
+<span class="nc bnc" id="L134" title="All 2 branches missed.">			if (file.getName().toLowerCase().contains(&quot;tensorflow&quot;)) </span>
+			{
+<span class="nc" id="L136">				logger.info(&quot;Deleting &quot; + file);</span>
+<span class="nc" id="L137">				file.delete();</span>
+			}
+		}
+<span class="nc" id="L140">	}</span>
+
+	/**
+	 * Reading the content of the {@link #TFVERSIONFILE} indicating which native version of TensorFlow is installed
+	 * @param root the root path of ImageJ
+	 * @return the current TensorFlow version installed in ImageJ/lib
+	 * @throws IOException in case the util file containing the native version number cannot be read (must not mean there is no usable native version)
+	 */
+	public static TensorFlowVersion readNativeVersionFile(String root) throws IOException 
+	{
+<span class="nc bnc" id="L150" title="All 2 branches missed.">		if(getNativeVersionFile(root).exists()) </span>
+		{
+<span class="nc" id="L152">			Path path = getNativeVersionFile(root).toPath();</span>
+<span class="nc" id="L153">			final String versionstr = new String(Files.readAllBytes(path));</span>
+<span class="nc" id="L154">			final String[] parts = versionstr.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">			if(parts.length &gt;= 3) {</span>
+<span class="nc" id="L156">				String version = parts[1];</span>
+<span class="nc" id="L157">				boolean gpuSupport = parts[2].toLowerCase().equals(&quot;gpu&quot;);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">				if(parts.length == 3) </span>
+				{
+<span class="nc" id="L160">					return new TensorFlowVersion(version, gpuSupport, null, null);</span>
+				}
+<span class="nc bnc" id="L162" title="All 2 branches missed.">				if(parts.length == 5) </span>
+				{
+<span class="nc" id="L164">					String cuda = parts[3];</span>
+<span class="nc" id="L165">					String cudnn = parts[4];</span>
+<span class="nc" id="L166">					return new TensorFlowVersion(version, gpuSupport, cuda, cudnn);</span>
+				}
+			} 
+			else 
+			{
+<span class="nc" id="L171">				throw new IOException(&quot;Content of &quot; + path + &quot; does not match expected format&quot;);</span>
+			}
+		}
+		// unknown version origin
+<span class="nc" id="L175">		return new TensorFlowVersion(TensorFlow.version(), null, null, null);</span>
+	}
+
+	/**
+	 * Writing the content of the {@link #TFVERSIONFILE} indicating which native version of TensorFlow is installed
+	 * @param root the root path of ImageJ
+	 * @param platform the platform of the user (e.g. linux64, win64, macosx)
+	 * @param version the installed TensorFlow version
+	 */
+	public static void writeNativeVersionFile(String root, String platform, TensorFlowVersion version) 
+	{
+		// create content
+<span class="nc" id="L187">		StringBuilder content = new StringBuilder();</span>
+<span class="nc" id="L188">		content.append(platform);</span>
+<span class="nc" id="L189">		content.append(&quot;,&quot;);</span>
+<span class="nc" id="L190">		content.append(version.getVersionNumber());</span>
+<span class="nc" id="L191">		content.append(&quot;,&quot;);</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">		if(version.usesGPU().isPresent()) </span>
+		{
+<span class="nc bnc" id="L194" title="All 2 branches missed.">			content.append(version.usesGPU().get() ? &quot;GPU&quot; : &quot;CPU&quot;);</span>
+<span class="nc" id="L195">		} </span>
+		else 
+		{
+<span class="nc" id="L198">			content.append(&quot;?&quot;);</span>
+		}
+<span class="nc bnc" id="L200" title="All 4 branches missed.">		if(version.getCompatibleCuDNN().isPresent() || version.getCompatibleCUDA().isPresent()) </span>
+		{
+<span class="nc bnc" id="L202" title="All 2 branches missed.">			if(version.getCompatibleCUDA().isPresent()) </span>
+			{
+<span class="nc" id="L204">				content.append(&quot;,&quot;);</span>
+<span class="nc" id="L205">				content.append(version.getCompatibleCUDA().get());</span>
+<span class="nc" id="L206">			} </span>
+			else 
+			{
+<span class="nc" id="L209">				content.append(&quot;?&quot;);</span>
+			}
+<span class="nc bnc" id="L211" title="All 2 branches missed.">			if(version.getCompatibleCuDNN().isPresent()) </span>
+			{
+<span class="nc" id="L213">				content.append(&quot;,&quot;);</span>
+<span class="nc" id="L214">				content.append(version.getCompatibleCuDNN().get());</span>
+<span class="nc" id="L215">			} </span>
+			else 
+			{
+<span class="nc" id="L218">				content.append(&quot;?&quot;);</span>
+			}
+		}
+		//write content to file
+<span class="nc" id="L222">		try (BufferedWriter writer = new BufferedWriter(new FileWriter(getNativeVersionFile(root)))) </span>
+		{
+<span class="nc" id="L224">			writer.write(content.toString());</span>
+		} 
+<span class="nc" id="L226">		catch (IOException e) </span>
+		{
+<span class="nc" id="L228">			e.printStackTrace();</span>
+		}
+<span class="nc" id="L230">	}</span>
+
+	/**
+	 * @param root the root path of ImageJ
+	 * @return the crash File location indication if loading TensorFlow resulted in a JVM crash
+	 */
+	public static File getCrashFile(String root) 
+	{
+<span class="fc" id="L238">		return new File(getLibDir(root) + PLATFORM + File.separator + CRASHFILE);</span>
+	}
+
+	/**
+	 * @param root the root path of ImageJ
+	 * @return the file indication which native TensorFlow version is currently installed
+	 */
+	public static File getNativeVersionFile(String root) 
+	{
+<span class="nc" id="L247">		return new File(getLibDir(root) + PLATFORM + File.separator + TFVERSIONFILE);</span>
+	}
+
+	/**
+	 * @param root the root path of ImageJ
+	 * @return the directory where native libraries can be placed so that they are loadable from Java
+	 */
+	public static String getLibDir(String root) 
+	{
+<span class="fc" id="L256">		return root + File.separator + LIBDIR + File.separator;</span>
+	}
+
+	/**
+	 * @param root the root path of ImageJ
+	 * @return the directory where native libraries can be placed so that the updater will move them into {@link #getLibDir(String)}
+	 */
+	public static String getUpdateLibDir(String root) 
+	{
+<span class="nc" id="L265">		return root + File.separator + UPDATEDIR + File.separator + LIBDIR + File.separator;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

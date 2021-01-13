@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AvailableTensorFlowVersions.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Noise2Noise_denoising</a> &gt; <a href="index.source.html" class="el_package">net.image.denoising.ui</a> &gt; <span class="el_source">AvailableTensorFlowVersions.java</span></div><h1>AvailableTensorFlowVersions.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2019 Board of Regents of the University of Notre Dame Electrical Engineering
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.image.denoising.ui;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Utility class providing a hardcoded list of available native TensorFlow library versions which can be downloaded from the google servers.
+ *
+ * @author Varun Mannam
+ */
+<span class="nc" id="L42">public class AvailableTensorFlowVersions </span>
+{
+
+	/**
+	 * @return a list of downloadable native TensorFlow versions for all operating systems, including their URL and optionally their CUDA / CuDNN compatibility
+	 */
+	public static List&lt;DownloadableTensorFlowVersion&gt; get() 
+        {
+<span class="fc" id="L50">		List&lt;DownloadableTensorFlowVersion&gt; versions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L51">		versions.clear();</span>
+		//linux64
+<span class="fc" id="L53">		versions.add(version(&quot;linux64&quot;, &quot;1.2.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.2.0.tar.gz&quot;));</span>
+<span class="fc" id="L54">		versions.add(version(&quot;linux64&quot;, &quot;1.2.0&quot;, &quot;GPU&quot;, &quot;8.0&quot;, &quot;5.1&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.2.0.tar.gz&quot;));</span>
+<span class="fc" id="L55">		versions.add(version(&quot;linux64&quot;, &quot;1.3.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.3.0.tar.gz&quot;));</span>
+<span class="fc" id="L56">		versions.add(version(&quot;linux64&quot;, &quot;1.3.0&quot;, &quot;GPU&quot;, &quot;8.0&quot;, &quot;6&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.3.0.tar.gz&quot;));</span>
+<span class="fc" id="L57">		versions.add(version(&quot;linux64&quot;, &quot;1.4.1&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.4.1.tar.gz&quot;));</span>
+<span class="fc" id="L58">		versions.add(version(&quot;linux64&quot;, &quot;1.4.1&quot;, &quot;GPU&quot;, &quot;8.0&quot;, &quot;6&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.4.1.tar.gz&quot;));</span>
+<span class="fc" id="L59">		versions.add(version(&quot;linux64&quot;, &quot;1.5.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.5.0.tar.gz&quot;));</span>
+<span class="fc" id="L60">		versions.add(version(&quot;linux64&quot;, &quot;1.5.0&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;7&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.5.0.tar.gz&quot;));</span>
+<span class="fc" id="L61">		versions.add(version(&quot;linux64&quot;, &quot;1.6.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.6.0.tar.gz&quot;));</span>
+<span class="fc" id="L62">		versions.add(version(&quot;linux64&quot;, &quot;1.6.0&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;7&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.6.0.tar.gz&quot;));</span>
+<span class="fc" id="L63">		versions.add(version(&quot;linux64&quot;, &quot;1.7.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.7.0.tar.gz&quot;));</span>
+<span class="fc" id="L64">		versions.add(version(&quot;linux64&quot;, &quot;1.7.0&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;7&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.7.0.tar.gz&quot;));</span>
+<span class="fc" id="L65">		versions.add(version(&quot;linux64&quot;, &quot;1.8.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.8.0.tar.gz&quot;));</span>
+<span class="fc" id="L66">		versions.add(version(&quot;linux64&quot;, &quot;1.8.0&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;7&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.8.0.tar.gz&quot;));</span>
+<span class="fc" id="L67">		versions.add(version(&quot;linux64&quot;, &quot;1.9.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.9.0.tar.gz&quot;));</span>
+<span class="fc" id="L68">		versions.add(version(&quot;linux64&quot;, &quot;1.9.0&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;7&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.9.0.tar.gz&quot;));</span>
+<span class="fc" id="L69">		versions.add(version(&quot;linux64&quot;, &quot;1.10.1&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.10.1.tar.gz&quot;));</span>
+<span class="fc" id="L70">		versions.add(version(&quot;linux64&quot;, &quot;1.10.1&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;7.?&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.10.1.tar.gz&quot;));</span>
+<span class="fc" id="L71">		versions.add(version(&quot;linux64&quot;, &quot;1.11.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.11.0.tar.gz&quot;));</span>
+<span class="fc" id="L72">		versions.add(version(&quot;linux64&quot;, &quot;1.11.0&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;&gt;= 7.2&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.11.0.tar.gz&quot;));</span>
+<span class="fc" id="L73">		versions.add(version(&quot;linux64&quot;, &quot;1.12.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.12.0.tar.gz&quot;));</span>
+<span class="fc" id="L74">		versions.add(version(&quot;linux64&quot;, &quot;1.12.0&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;&gt;= 7.2&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.12.0.tar.gz&quot;));</span>
+<span class="fc" id="L75">		versions.add(version(&quot;linux64&quot;, &quot;1.13.1&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.13.1.tar.gz&quot;));</span>
+<span class="fc" id="L76">		versions.add(version(&quot;linux64&quot;, &quot;1.13.1&quot;, &quot;GPU&quot;, &quot;10.0&quot;, &quot;7.4&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.13.1.tar.gz&quot;));</span>
+<span class="fc" id="L77">		versions.add(version(&quot;linux64&quot;, &quot;1.14.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.14.0.tar.gz&quot;));</span>
+<span class="fc" id="L78">		versions.add(version(&quot;linux64&quot;, &quot;1.14.0&quot;, &quot;GPU&quot;, &quot;10.0&quot;, &quot;&gt;= 7.4&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.14.0.tar.gz&quot;));</span>
+<span class="fc" id="L79">		versions.add(version(&quot;linux64&quot;, &quot;1.15.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.15.0.tar.gz&quot;));</span>
+<span class="fc" id="L80">		versions.add(version(&quot;linux64&quot;, &quot;1.15.0&quot;, &quot;GPU&quot;, &quot;10.0&quot;, &quot;&gt;= 7.4&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.15.0.tar.gz&quot;));</span>
+		//win64
+<span class="fc" id="L82">		versions.add(version(&quot;win64&quot;, &quot;1.2.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.2.0.zip&quot;));</span>
+<span class="fc" id="L83">		versions.add(version(&quot;win64&quot;, &quot;1.3.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.3.0.zip&quot;));</span>
+<span class="fc" id="L84">		versions.add(version(&quot;win64&quot;, &quot;1.4.1&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.4.1.zip&quot;));</span>
+<span class="fc" id="L85">		versions.add(version(&quot;win64&quot;, &quot;1.5.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.5.0.zip&quot;));</span>
+<span class="fc" id="L86">		versions.add(version(&quot;win64&quot;, &quot;1.6.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.6.0.zip&quot;));</span>
+<span class="fc" id="L87">		versions.add(version(&quot;win64&quot;, &quot;1.7.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.7.0.zip&quot;));</span>
+<span class="fc" id="L88">		versions.add(version(&quot;win64&quot;, &quot;1.8.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.8.0.zip&quot;));</span>
+<span class="fc" id="L89">		versions.add(version(&quot;win64&quot;, &quot;1.9.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.9.0.zip&quot;));</span>
+<span class="fc" id="L90">		versions.add(version(&quot;win64&quot;, &quot;1.10.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.10.0.zip&quot;));</span>
+<span class="fc" id="L91">		versions.add(version(&quot;win64&quot;, &quot;1.11.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.11.0.zip&quot;));</span>
+<span class="fc" id="L92">		versions.add(version(&quot;win64&quot;, &quot;1.12.0&quot;, &quot;GPU&quot;, &quot;9.0&quot;, &quot;&gt;= 7.2&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-windows-x86_64-1.12.0.zip&quot;));</span>
+<span class="fc" id="L93">		versions.add(version(&quot;win64&quot;, &quot;1.12.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.12.0.zip&quot;));</span>
+<span class="fc" id="L94">		versions.add(version(&quot;win64&quot;, &quot;1.13.1&quot;, &quot;GPU&quot;, &quot;10.0&quot;, &quot;7.4&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-windows-x86_64-1.13.1.zip&quot;));</span>
+<span class="fc" id="L95">		versions.add(version(&quot;win64&quot;, &quot;1.13.1&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.13.1.zip&quot;));</span>
+<span class="fc" id="L96">		versions.add(version(&quot;win64&quot;, &quot;1.14.0&quot;, &quot;GPU&quot;, &quot;10.0&quot;, &quot;&gt;= 7.4&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-windows-x86_64-1.14.0.zip&quot;));</span>
+<span class="fc" id="L97">		versions.add(version(&quot;win64&quot;, &quot;1.14.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.14.0.zip&quot;));</span>
+<span class="fc" id="L98">		versions.add(version(&quot;win64&quot;, &quot;1.15.0&quot;, &quot;GPU&quot;, &quot;10.0&quot;, &quot;&gt;= 7.4&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-windows-x86_64-1.15.0.zip&quot;));</span>
+<span class="fc" id="L99">		versions.add(version(&quot;win64&quot;, &quot;1.15.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.15.0.zip&quot;));</span>
+		//macosx
+<span class="fc" id="L101">		versions.add(version(&quot;macosx&quot;, &quot;1.2.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.2.0.tar.gz&quot;));</span>
+<span class="fc" id="L102">		versions.add(version(&quot;macosx&quot;, &quot;1.3.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.3.0.tar.gz&quot;));</span>
+<span class="fc" id="L103">		versions.add(version(&quot;macosx&quot;, &quot;1.4.1&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.4.1.tar.gz&quot;));</span>
+<span class="fc" id="L104">		versions.add(version(&quot;macosx&quot;, &quot;1.5.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.5.0.tar.gz&quot;));</span>
+<span class="fc" id="L105">		versions.add(version(&quot;macosx&quot;, &quot;1.6.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.6.0.tar.gz&quot;));</span>
+<span class="fc" id="L106">		versions.add(version(&quot;macosx&quot;, &quot;1.7.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.7.0.tar.gz&quot;));</span>
+<span class="fc" id="L107">		versions.add(version(&quot;macosx&quot;, &quot;1.8.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.8.0.tar.gz&quot;));</span>
+<span class="fc" id="L108">		versions.add(version(&quot;macosx&quot;, &quot;1.9.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.9.0.tar.gz&quot;));</span>
+<span class="fc" id="L109">		versions.add(version(&quot;macosx&quot;, &quot;1.10.1&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.10.1.tar.gz&quot;));</span>
+<span class="fc" id="L110">		versions.add(version(&quot;macosx&quot;, &quot;1.11.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.11.0.tar.gz&quot;));</span>
+<span class="fc" id="L111">		versions.add(version(&quot;macosx&quot;, &quot;1.12.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.12.0.tar.gz&quot;));</span>
+<span class="fc" id="L112">		versions.add(version(&quot;macosx&quot;, &quot;1.13.1&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.13.1.tar.gz&quot;));</span>
+<span class="fc" id="L113">		versions.add(version(&quot;macosx&quot;, &quot;1.14.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.14.0.tar.gz&quot;));</span>
+<span class="fc" id="L114">		versions.add(version(&quot;macosx&quot;, &quot;1.14.0&quot;, &quot;CPU&quot;, &quot;https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.15.0.tar.gz&quot;));</span>
+<span class="fc" id="L115">		return versions;</span>
+	}
+
+	private static DownloadableTensorFlowVersion version(String platform, String tensorFlowVersion, String mode, String url) 
+        {
+<span class="fc" id="L120">			DownloadableTensorFlowVersion version = new DownloadableTensorFlowVersion(tensorFlowVersion, mode.equals(&quot;GPU&quot;));</span>
+			try 
+			{
+<span class="fc" id="L123">				version.setURL(new URL(url));</span>
+<span class="fc" id="L124">			} </span>
+<span class="nc" id="L125">            catch (MalformedURLException e) </span>
+            {
+<span class="nc" id="L127">            	e.printStackTrace();</span>
+            }
+<span class="fc" id="L129">			version.setPlatform(platform);</span>
+<span class="fc" id="L130">			return version;</span>
+        }
+
+	private static DownloadableTensorFlowVersion version(String platform, String tensorFlowVersion, String mode, String cuda, String cudnn, String url)
+        {
+			try 
+            {
+<span class="fc" id="L137">				return new DownloadableTensorFlowVersion(new URL(url), tensorFlowVersion, platform, mode.equals(&quot;GPU&quot;), cuda, cudnn);</span>
+            } 
+<span class="nc" id="L139">            catch (MalformedURLException e)</span>
+            {
+<span class="nc" id="L141">            	e.printStackTrace();</span>
+<span class="nc" id="L142">            	return null;</span>
+            }
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

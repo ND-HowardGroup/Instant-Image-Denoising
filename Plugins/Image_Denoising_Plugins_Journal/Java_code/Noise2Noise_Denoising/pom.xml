@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<!-- <parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava-base</artifactId>
+		<version>11.2.0</version>
+		<relativePath />
+	</parent> -->
+	
+	<parent>
+	<groupId>org.scijava</groupId>
+	<artifactId>pom-scijava</artifactId>
+	<version>29.2.1</version>
+	<relativePath />
+	</parent> 
+	
+	<groupId>net.imagej</groupId>
+	<artifactId>Noise2Noise_Denoising</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<name>Noise2Noise_denoising</name>
+	<description>Noise2Noise Denoising Integration.</description>
+	<url>https://github.com/ND-HowardGroup/Instant-Image-Denoising</url>
+	<inceptionYear>2019</inceptionYear>
+	<organization>
+		<name>ImageJ</name>
+		<url>https://imagej.net/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>vmannam</id>
+			<name>Varun Mannam</name>
+			<url>https://imagej.net/User:Vmannam</url>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Varun Mannam</name>
+			<properties><id>vmannam</id></properties>
+			<roles><role>founder</role></roles>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/imagej</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/varunmannam/Image_denoising</connection>
+		<developerConnection>scm:git:git@github.com:varunmannam/Image_denoising</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/ND-HowardGroup/Instant-Image-Denoising</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/ND-HowardGroup/Instant-Image-Denoising/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Varun Mannam</system>
+		<url>https://github.com/ND-HowardGroup/Instant-Image-Denoising</url>
+	</ciManagement>
+
+	<properties>
+		<main-class>Noise2Noise</main-class>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.copyrightOwners>Board of Regents of the University of Notre Dame.</license.copyrightOwners>
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+		<apache-commons-compress.version>1.18</apache-commons-compress.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.tensorflow</groupId>
+			<artifactId>tensorflow</artifactId>
+		</dependency>
+        <dependency>
+			<groupId>org.tensorflow</groupId>
+			<artifactId>libtensorflow_jni_gpu</artifactId>
+            <version>1.12.0</version>
+		</dependency>
+		<dependency>
+			<!--
+			NB: For HTTP access to remote Inception model.
+			If this dependency is bothersome, we could consider separating
+			the image classification demo from the ImageJ-TensorFlow library.
+			-->
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-io-http</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>${apache-commons-compress.version}</version>
+		</dependency>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

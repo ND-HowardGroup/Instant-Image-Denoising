@@ -1,0 +1,6 @@
+# Created at 2021-01-13T03:41:34.892
+objc[7086]: Class JavaLaunchHelper is implemented in both /Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/bin/java (0x1020714c0) and /Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/libinstrument.dylib (0x1020eb4e0). One of the two will be used. Which one is undefined.
+
+# Created at 2021-01-13T03:41:40.016
+2021-01-13 03:41:40.016105: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.2 AVX AVX2 FMA
+

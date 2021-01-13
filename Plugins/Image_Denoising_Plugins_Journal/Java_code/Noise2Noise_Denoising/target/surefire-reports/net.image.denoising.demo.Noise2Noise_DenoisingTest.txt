@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: net.image.denoising.demo.Noise2Noise_DenoisingTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.877 s - in net.image.denoising.demo.Noise2Noise_DenoisingTest

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TensorFlowLibraryManagementCommand.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DnCNN_Denoising</a> &gt; <a href="index.source.html" class="el_package">net.dncnn.denoising.ui</a> &gt; <span class="el_source">TensorFlowLibraryManagementCommand.java</span></div><h1>TensorFlowLibraryManagementCommand.java</h1><pre class="source lang-java linenums">/*-
+ * #%L
+ * ImageJ/TensorFlow integration.
+ * %%
+ * Copyright (C) 2019 Board of Regents of the University of Notre Dame Electrical Engineering
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+
+package net.dncnn.denoising.ui;
+
+import net.imagej.ImageJ;
+import net.dncnn.denoising.TensorFlowService;
+import net.dncnn.denoising.TensorFlowVersion;
+import net.dncnn.denoising.util.TensorFlowUtil;
+import net.imagej.updater.util.UpdaterUtil;
+import org.scijava.Context;
+import org.scijava.app.AppService;
+import org.scijava.command.Command;
+import org.scijava.log.LogService;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * This command provides an interface for activating a specific Java TensorFlow version.
+ * The user can choose between the version included via maven and archived native library versions
+ * which can be downloaded from the Google servers.
+ *
+ * @author Varun Mannam
+ * 
+ */
+@Plugin(type = Command.class, menuPath = &quot;Edit&gt;Options&gt;TensorFlow...&quot;)
+<span class="nc" id="L57">public class TensorFlowLibraryManagementCommand implements Command </span>
+{
+
+	@Parameter
+	private TensorFlowService tensorFlowService;
+
+	@Parameter
+	private AppService appService;
+
+	@Parameter
+	private LogService logService;
+
+	@Parameter
+	private Context context;
+
+	DownloadableTensorFlowVersion currentVersion;
+<span class="nc" id="L73">	List&lt;DownloadableTensorFlowVersion&gt; availableVersions = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L75">	String platform = UpdaterUtil.getPlatform();</span>
+
+	private TensorFlowInstallationHandler installationHandler;
+
+	@Override
+	public void run() 
+	{
+<span class="nc" id="L82">		tensorFlowService.loadLibrary();</span>
+<span class="nc" id="L83">		installationHandler = new TensorFlowInstallationHandler();</span>
+<span class="nc" id="L84">		context.inject(installationHandler);</span>
+<span class="nc" id="L85">		final TensorFlowLibraryManagementFrame frame = new TensorFlowLibraryManagementFrame(tensorFlowService, installationHandler);</span>
+<span class="nc" id="L86">		frame.init();</span>
+<span class="nc" id="L87">		initAvailableVersions();</span>
+<span class="nc" id="L88">		frame.updateChoices(availableVersions);</span>
+<span class="nc" id="L89">		frame.pack();</span>
+<span class="nc" id="L90">		frame.setLocationRelativeTo(null);</span>
+<span class="nc" id="L91">		frame.setMinimumSize(new Dimension(0, 200));</span>
+<span class="nc" id="L92">		frame.setVisible(true);</span>
+
+<span class="nc" id="L94">	}</span>
+
+	private void initAvailableVersions() 
+	{
+<span class="nc" id="L98">		initCurrentVersion();</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">		if(currentVersion != null) addAvailableVersion(currentVersion);</span>
+<span class="nc" id="L100">		addAvailableVersion(getTensorFlowJARVersion());</span>
+<span class="nc" id="L101">		AvailableTensorFlowVersions.get().forEach(version -&gt; addAvailableVersion(version));</span>
+<span class="nc" id="L102">	}</span>
+
+	private void initCurrentVersion() 
+	{
+<span class="nc" id="L106">		TensorFlowVersion current = tensorFlowService.getTensorFlowVersion();</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">		if(current != null) {</span>
+<span class="nc" id="L108">			currentVersion = new DownloadableTensorFlowVersion(current);</span>
+<span class="nc" id="L109">			currentVersion.setPlatform(platform);</span>
+<span class="nc" id="L110">			currentVersion.setActive(true);</span>
+		}
+<span class="nc" id="L112">	}</span>
+
+	private DownloadableTensorFlowVersion getTensorFlowJARVersion() 
+	{
+<span class="nc" id="L116">		DownloadableTensorFlowVersion version = new DownloadableTensorFlowVersion(TensorFlowUtil.versionFromClassPathJAR());</span>
+<span class="nc" id="L117">		version.setPlatform(platform);</span>
+<span class="nc" id="L118">		version.setURL(TensorFlowUtil.getTensorFlowJAR());</span>
+<span class="nc" id="L119">		return version;</span>
+	}
+
+	private void addAvailableVersion(DownloadableTensorFlowVersion version) 
+	{
+<span class="nc bnc" id="L124" title="All 2 branches missed.">		if(!version.getPlatform().equals(platform)) return;</span>
+<span class="nc" id="L125">		installationHandler.updateCacheStatus(version);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">		for (DownloadableTensorFlowVersion other : availableVersions) </span>
+		{
+<span class="nc bnc" id="L128" title="All 2 branches missed.">			if (other.equals(version)) </span>
+			{
+<span class="nc" id="L130">				other.harvest(version);</span>
+<span class="nc" id="L131">				return;</span>
+			}
+		}
+<span class="nc" id="L134">		availableVersions.add(version);</span>
+<span class="nc" id="L135">	}</span>
+
+	public static void main(String... args) 
+	{
+<span class="nc" id="L139">		ImageJ ij = new ImageJ();</span>
+<span class="nc" id="L140">		ij.ui().showUI();</span>
+<span class="nc" id="L141">		ij.command().run(TensorFlowLibraryManagementCommand.class, true);</span>
+<span class="nc" id="L142">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
