@@ -5,12 +5,6 @@
 # Description
 This is the plugin used to denoise any fluorescence microscopy image that contains mixed Poisson-Gaussian noise from the fluorescence microscopy (Wide-field, Confocal and two-photon microscopy). This algorithm is developed by training the noisy microscopic images using the FMD dataset with the convolutional neural networks using the Noise2Noise/DnCNN architectures.
 
-# Comparison of Noise2Void method: (test image from the W2S dataset)
-
-Input Noisy Image          | Denoised (Noise2Void)	   | Our Denoised (Noise2Noise)| Target Image 		         |	
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
-![](Plugins/N2V_Comparison/W2S_dataset/W2S_noisy_input_avg1_010_0.png)   | ![](Plugins/N2V_Comparison/W2S_dataset/W2S_denosied_Noise2Void_010_0.png) | ![](Plugins/N2V_Comparison/W2S_dataset/W2S_denosied_Noise2Noise(Ours)_010_0.png)  | ![](Plugins/N2V_Comparison/W2S_dataset/W2S_target_avg400_010_0.png) | 
-PSNR: 17.93 dB			       | PSNR: 22.29 dB			       | PSNR: 25.44 dB	           | 
 
 # Steps to get a denoised image:
 1a. Open Fiji/ImageJ
