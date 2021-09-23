@@ -7,11 +7,11 @@ This repository includes the code used for the image denoising of our Noise2Nois
 
 # Results shown in the Journal paper
 
-2D single channel image from FMD dataset: Confocal_FISH_3.png (from confocal microscopy: sample: Zebrafish)
+2D single channel image from FMD dataset: Confocal_FISH_3.png (from confocal microscopy and sample: Zebrafish)
 
 ![](Plugins/Test_images/2D_images/Raw_Images/Confocal_FISH_3.png)
 
-Image denoising using our ImageJ plugin (from trained Noise2Noise ML model):
+Image denoising using our ImageJ plugin (from trained Noise2Noise ML model): (time: 80 ms, image size: 512x512)
 
 ![](Plugins/Test_images/2D_images/Image_Denoising_results/denoised_confocal_fish3.png)
 
