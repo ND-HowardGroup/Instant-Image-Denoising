@@ -20,17 +20,6 @@ Target image geenrated by taking average of 50 noisy images in the same FOV:
 ![](Plugins/Test_images/2D_images/Target(ground_truth)_Images/gt_Confocal_FISH_3.png)
 
 
-2D multiple channel image from FMD dataset: BPAE sample from Wide-field microscopy
-
-![](Plugins/Test_images/2D_images/Raw_Images/WideField_BPAE_raw_rgb_new1.png)
-
-Image denoising using our ImageJ plugin (from trained Noise2Noise ML model):
-
-![](Plugins/Test_images/2D_images/Image_Denoising_results/WideField_BPAE_denoised_rgb_new1.png)
-
-Target image geenrated by taking average of 50 noisy images in the same FOV: 
-
-![](Plugins/Test_images/2D_images/Target(ground_truth)_Images/WideField_BPAE_gt_rgb_new1.png)
 
 
 ## **Copyright**
