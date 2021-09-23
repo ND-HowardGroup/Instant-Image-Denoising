@@ -11,7 +11,7 @@ This repository includes the code used for the image denoising of our Noise2Nois
 
 ![](Plugins/Test_images/2D_images/Raw_Images/Confocal_FISH_3.png)
 
-Image denoising using our ImageJ plugin (from trained Noise2Noise ML model): (time: 80 ms, image size: 512x512)
+Image denoising using our ImageJ plugin (from trained Noise2Noise ML model): (time: 80 ms in GPU, image size: 512x512)
 
 ![](Plugins/Test_images/2D_images/Image_Denoising_results/denoised_confocal_fish3.png)
 
