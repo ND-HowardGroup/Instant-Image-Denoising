@@ -9,7 +9,7 @@ This repository includes the code used for the image denoising of our Noise2Nois
 
 Input Noisy Image          | Our Denoised (Noise2Noise)| Target Image 		         |	
 :-------------------------:|:-------------------------:|:-------------------------:|
-![](Plugins/Test_images/2D_images/Raw_Images/Confocal_FISH_3.png =100x100)   | ![](Plugins/Test_images/2D_images/Image_Denoising_results/denoised_confocal_fish3.png)  | ![](Plugins/Test_images/2D_images/Target(ground_truth)_Images/gt_Confocal_FISH_3.png) | 
+![](Plugins/Test_images/2D_images/Raw_Images/Confocal_FISH_3.png)   | ![](Plugins/Test_images/2D_images/Image_Denoising_results/denoised_confocal_fish3.png)  | ![](Plugins/Test_images/2D_images/Target(ground_truth)_Images/gt_Confocal_FISH_3.png) | 
 
 Details: 
 Input: 2D single channel image from FMD dataset: Confocal_FISH_3.png (from a confocal microscopy and sample: Zebrafish)
