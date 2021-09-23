@@ -3,7 +3,7 @@
 
 Input Noisy Image          | Our Denoised (Noise2Noise)| Target Image 		         |	
 :-------------------------:|:-------------------------:|:-------------------------:|
-![](2D_images/Raw_Images/WideField_BPAE_raw_rgb_new1.png)   | ![](2D_images/Image_Denoising_results/WideField_BPAE_denoised_rgb_new1.png)  | ![](2D_images/Target(ground_truth)_Images/WideField_BPAE_gt_rgb_new1.png) | 
+<img src="...2D_images/Raw_Images/WideField_BPAE_raw_rgb_new1.png" width="300" height="300" />   | <img src="...2D_images/Image_Denoising_results/WideField_BPAE_denoised_rgb_new1.png" width="300" height="300" />  | <img src="...2D_images/Target(ground_truth)_Images/WideField_BPAE_gt_rgb_new1.png" width="300" height="300" />  | 
 
 # Image denoising on the 3D images (converted channels into 3D stack):
 
