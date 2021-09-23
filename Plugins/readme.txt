@@ -2,9 +2,17 @@
 #Details: The Department of Electrical Engineering, The University of Notre Dame, South Bend, Indiana (IN), USA. Zip: 46556
 #email: vmannam@nd.edu
 
-Description: This is the plugin used to denoise any fluorescence microscopy image that contains mixed Poisson-Gaussian noise from the fluorescence microscopy (Wide-field, Confocal and two-photon microscopy). This algorithm is developed by training the noisy microscopic images using the FMD dataset with the convolutional neural networks using the Noise2Noise/DnCNN architectures.
+# Description
+This is the plugin used to denoise any fluorescence microscopy image that contains mixed Poisson-Gaussian noise from the fluorescence microscopy (Wide-field, Confocal and two-photon microscopy). This algorithm is developed by training the noisy microscopic images using the FMD dataset with the convolutional neural networks using the Noise2Noise/DnCNN architectures.
 
-Steps to get a denoised image:
+# Comparison of Noise2Void method: (test image from the W2S dataset)
+
+Input Noisy Image          | Denoised (Noise2Void)	   | Our Denoised (Noise2Noise)| Target Image 		         |	
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+![](Plugins/N2V_Comparison/W2S_dataset/W2S_noisy_input_avg1_010_0.png)   | ![](Plugins/N2V_Comparison/W2S_dataset/W2S_denosied_Noise2Void_010_0.png) | ![](Plugins/N2V_Comparison/W2S_dataset/W2S_denosied_Noise2Noise(Ours)_010_0.png)  | ![](Plugins/N2V_Comparison/W2S_dataset/W2S_target_avg400_010_0.png) | 
+PSNR: 17.93 dB			       | PSNR: 22.29 dB			       | PSNR: 25.44 dB	           | 
+
+# Steps to get a denoised image:
 1a. Open Fiji/ImageJ
 1b. ImageJ -> Edit -> Options -> Tensorflow -> Choose the Tensorflow TF version based on the user system requirements (like: CPU or GPU with proper CUDA drivers)
 2. Select an image in ImageJ (use open image function: File ->open)
@@ -12,7 +20,7 @@ Steps to get a denoised image:
 4. Use the console to check for the test time.
 
 
-Limitations:
+# Current Limitations:
 1. Plugin is  limiteed in the number of images at a time to denoise (limitation on the TendorFlow and computer GPU memory)
 2. Noise2Noise uses the max-pool layer, so if the image size is not multiple of 32x32, image will be adjusted using linear interpolation (however, the padding is the prefered method which is under current development) to the nearest multiple of 32x32 and perform the denoising and finally restores back to the original image dimensions. 
 
@@ -24,4 +32,6 @@ Noise2Noise ML model uses 5 max-pooling layers of kernel size 2x2 (in total it i
 4. 4D images support is not added yet this stage but can use hyper-stack to stack conversion and perform the image denoising on the 3D stacks.
 5. GPU common errors are linking the CUDA drivers using symbolic names.
 
+## **Copyright**
 
+© 2019 Varun Mannam, University of Notre Dame  
