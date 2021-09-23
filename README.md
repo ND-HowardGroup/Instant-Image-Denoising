@@ -9,7 +9,14 @@ This repository includes the code used for the image denoising of our Noise2Nois
 
 Input Noisy Image          | Our Denoised (Noise2Noise)| Target Image 		         |	
 :-------------------------:|:-------------------------:|:-------------------------:|
-![](Plugins/Test_images/2D_images/Raw_Images/Confocal_FISH_3.png)   | ![](Plugins/Test_images/2D_images/Image_Denoising_results/denoised_confocal_fish3.png)  | ![](Plugins/Test_images/2D_images/Target(ground_truth)_Images/gt_Confocal_FISH_3.png) | 
+![](Plugins/Test_images/2D_images/Raw_Images/Confocal_FISH_3.png)   | ![](Plugins/Test_images/2D_images/Image_Denoising_results/denoised_confocal_fish3.png)  | ![](Plugins/Test_images/2D_images/Target(ground_truth)_Images/gt_Confocal_FISH_3.png) |
+
+
+Input Noisy Image          | Our Denoised (Noise2Noise)| Target Image 		         |	
+:-------------------------:|:-------------------------:|:-------------------------:|
+<img src="https://github.com/ND-HowardGroup/Instant-Image-Denoising/tree/master/Plugins/Test_images/2D_images/Raw_Images/Confocal_FISH_3.png" width="200" height="200" />   |  <img src="https://github.com/ND-HowardGroup/Instant-Image-Denoising/tree/master/Plugins/Test_images/2D_images/Image_Denoising_results/denoised_confocal_fish3.png" width="200" height="200" />| <img src="https://github.com/ND-HowardGroup/Instant-Image-Denoising/tree/master/Plugins/Test_images/2D_images/Target(ground_truth)_Images/gt_Confocal_FISH_3.png" width="200" height="200" /> |
+
+
 
 Details: 
 Input: 2D single channel image from FMD dataset: Confocal_FISH_3.png (from a confocal microscopy and sample: Zebrafish)
