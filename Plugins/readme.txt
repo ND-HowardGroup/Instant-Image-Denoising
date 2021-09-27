@@ -14,8 +14,12 @@ This is the plugin used to denoise any fluorescence microscopy image that contai
 4. Use the console to check for the test time.
 
 
+# Implementation details of the plugins: 
+In addition to the existing functions of ImageJ-tensorflow library provided by Rueden et.at, we have added the pre-processing (normalization) and post-processing (restoring original scaling) steps and support our plugin for any datatype. For example, our ImageJ plugin works for 8-bit depth data to 16-bit and 32-bit depth images and performs the image denoising using the pre-trained ML models and provides the result in 32-bit format. Additionally, the neural network expects the input image to be normalized (to a range between -0.5 to 0.5) which plug-in performs prior to model inference. Conversely, the denoised inference is subsequently rescaled by the same offset and scaling factor to produce the final output image.
+
+
 # Current Limitations:
-1. Plugin is  limiteed in the number of images at a time to denoise (limitation on the TendorFlow and computer GPU memory)
+1. Plugin is  limiteed in the number of images at a time to denoise (limitation on the TensorFlow and computer GPU memory)
 2. Noise2Noise uses the max-pool layer, so if the image size is not multiple of 32x32, image will be adjusted using linear interpolation (however, the padding is the prefered method which is under current development) to the nearest multiple of 32x32 and perform the denoising and finally restores back to the original image dimensions. 
 
 ##### Note #####
