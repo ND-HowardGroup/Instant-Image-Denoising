@@ -1,8 +1,6 @@
-#Author: Varun Mannam
-#Details: The Department of Electrical Engineering, The University of Notre Dame, South Bend, Indiana (IN), USA. Zip: 46556
-#email: vmannam@nd.edu
+# Author: Varun Mannam, The Department of Electrical Engineering, The University of Notre Dame, South Bend, Indiana (IN), USA. Zip: 46556, Email: vmannam@nd.edu
 
-# Description
+# High-level description of the plugin
 This is the plugin used to denoise any fluorescence microscopy image that contains mixed Poisson-Gaussian noise from the fluorescence microscopy (Wide-field, Confocal and two-photon microscopy). This algorithm is developed by training the noisy microscopic images using the FMD dataset with the convolutional neural networks using the Noise2Noise/DnCNN architectures.
 
 # Steps to get a denoised image:
@@ -14,7 +12,6 @@ This is the plugin used to denoise any fluorescence microscopy image that contai
 
 # Implementation details of the plugins: 
 In addition to the existing functions of ImageJ-tensorflow library provided by Rueden et.at, we have added the pre-processing (normalization) and post-processing (restoring original scaling) steps and support our plugin for any datatype. For example, our ImageJ plugin works for 8-bit depth data to 16-bit and 32-bit depth images and performs the image denoising using the pre-trained ML models and provides the result in 32-bit format. Additionally, the neural network expects the input image to be normalized (to a range between -0.5 to 0.5) which plug-in performs prior to model inference. Conversely, the denoised inference is subsequently rescaled by the same offset and scaling factor to produce the final output image.
-
 
 # Current Limitations:
 1. Plugin is  limiteed in the number of images at a time to denoise (limitation on the TensorFlow and computer GPU memory)
