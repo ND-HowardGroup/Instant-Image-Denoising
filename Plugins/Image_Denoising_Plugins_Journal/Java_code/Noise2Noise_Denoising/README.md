@@ -12,8 +12,8 @@ tutorial](https://www.tensorflow.org/tutorials/image_recognition).
 ## Quickstart
 
 ```sh
-git clone https://github.com/varunmannam/Image_denoising
-cd Image_denoising
+git clone https://github.com/ND-HowardGroup/Instant-Image-Denoising/tree/master/Plugins/Image_Denoising_Plugins_Journal/Java_code/Noise2Noise_Denoising
+cd Noise2Noise_Denoising
 mvn -Pexec
 ```
 
