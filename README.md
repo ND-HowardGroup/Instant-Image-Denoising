@@ -30,7 +30,7 @@ PSNR: 17.93 dB			       | PSNR: 22.29 dB			       | PSNR: 25.44 dB	           |
 
 Input Noisy Image          | Noise2Noise Plugin        |       	  
 :-------------------------:|:-------------------------:|
-<img src="Plugins/Model_validation/Out_of_distribution_structures/N2V_dataset/N2v/FA - 0488 Evolve.png" width="175" height="175" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/N2V_dataset/N2v/denoised_FA - 0488 Evolve.png" width="175" height="175" /> |
+<img src="Plugins/Model_validation/Out_of_distribution_structures/N2V_dataset/N2v/FA - 0488 Evolve.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/N2V_dataset/N2v/denoised_FA - 0488 Evolve.png" width="225" height="225" /> |
 
 
 ## **Frequently Asked Questions (FAQs)**
