@@ -26,7 +26,7 @@ Input Noisy Image          | Noise2Void           	   | Noise2Noise Plugin      
 PSNR: 17.93 dB			       | PSNR: 22.29 dB			       | PSNR: 25.44 dB	           | 
 
 
-# Results on the out-of-distribution structuresusing the Noise2Void image denoising method: 
+# Results on the out-of-distribution structures using the Noise2Void image denoising method: 
 
 
 ## **Frequently Asked Questions (FAQs)**
