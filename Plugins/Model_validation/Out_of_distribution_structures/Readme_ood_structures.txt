@@ -13,7 +13,7 @@ Datasets: Name, Reference paper, Github link, description of the paper and datas
 5. 3D RCAN dataset: [Link: https://www.nature.com/articles/s41592-021-01155-x.pdf , https://zenodo.org/record/4624364#.YeLvx1jMJmB] --> low SNR, diffraction limited as input and high SNR with deconvolution as target (RCAN model provides the joint image denoising and super-resolution) (supervised training method)
 6. ACsN dataset: [Link: https://www.nature.com/articles/s41467-019-13841-8.pdf, https://github.com/ShuJiaLab/ACsN] --> for fixed pattern noise (self-supervised image denoising to remove the fixed pattern noise)
 7. CBMI dataset: [Link: https://www.nature.com/articles/s41592-021-01285-2.pdf , https://zenodo.org/record/5212734#.YeLus1jMJmA] --> Removing independent noise in systems neuroscience data using DeepInterpolation (segmentation images (images, masks are available))
-8. Convallaria dataset: [Link: https://zenodo.org/record/5156913#.Ydb9QRPMJmB] --> PN2V dataset (self-supervised training method)
+8. Convallaria dataset: [Link: https://arxiv.org/pdf/1906.00651.pdf , https://zenodo.org/record/5156913#.Ydb9QRPMJmB] --> PN2V dataset (self-supervised training method)
 9. Online Dataset:  [Link: https://www.nature.com/articles/s41592-021-01167-7.pdf, https://github.com/qnano/simnoise] Structured illumination microscopy with noise-controlled image reconstructions (only noisy images are available: "nano test structures, Fixed cells, GFP cells")
 
 Fluoresence microscopy sample details are explained in the reference paper/github links. Microscopy details are also provided in the given reference papers. 
