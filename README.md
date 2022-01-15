@@ -25,6 +25,10 @@ Input Noisy Image          | Noise2Void           	   | Noise2Noise Plugin      
 <img src="Plugins/Model_validation/N2V_Comparison/W2S_dataset/W2S_noisy_input_avg1_010_0.png" width="175" height="175" />  | <img src="Plugins/Model_validation/N2V_Comparison/W2S_dataset/W2S_denosied_Noise2Void_010_0.png" width="175" height="175" /> | <img src="Plugins/Model_validation/N2V_Comparison/W2S_dataset/W2S_denosied_Noise2Noise(Ours)_010_0.png" width="175" height="175" />  | <img src="Plugins/Model_validation/N2V_Comparison/W2S_dataset/W2S_target_avg400_010_0.png" width="175" height="175" />  | 
 PSNR: 17.93 dB			       | PSNR: 22.29 dB			       | PSNR: 25.44 dB	           | 
 
+
+# Results on the out-of-distribution structuresusing the Noise2Void image denoising method: 
+
+
 ## **Frequently Asked Questions (FAQs)**
 Some of the faq like image conversions, 2D, 3D image denoising, denoising images in a folder using macros, etc..
 https://github.com/ND-HowardGroup/Instant-Image-Denoising/blob/master/FAQ_Instant_Image_Denoising.docx
