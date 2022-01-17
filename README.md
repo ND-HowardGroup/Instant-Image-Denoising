@@ -44,6 +44,16 @@ Details:
 Input: 2D single channel image from CARE dataset, PN2V Convallaria dataset, CBMI dataset (Mito, ER images). 
 
 
+# Results on the GigaDB dataset (of BPAE samples, membrane structures) using the Noise2Noise image denoising method: 
+Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
+:-------------------------:|:-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-highsnr-sample.png" width="200" height="200" /> |
+:-------------------------:|:-------------------------:|:-------------------------:|
+
+Details: 
+Input: 2D single channel image from GigaDB dataset.
+
 ## **Frequently Asked Questions (FAQs)**
 Some of the faq like image conversions, 2D, 3D image denoising, denoising images in a folder using macros, etc..
 https://github.com/ND-HowardGroup/Instant-Image-Denoising/blob/master/FAQ_Instant_Image_Denoising.docx
