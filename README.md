@@ -50,9 +50,26 @@ Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)
 :-------------------------:|:-------------------------:|:-------------------------:|
 <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-highsnr-sample.png" width="200" height="200" /> |
 :-------------------------:|:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/membrane-lowsnr-sample.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/membrane-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/membrane-highsnr-sample.png" width="200" height="200" /> |
+:-------------------------:|:-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-confocal-lowsnr-sample.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-confocal-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-confocal-highsnr-sample.png" width="200" height="200" /> |
+:-------------------------:|:-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/actin-20x-noise1-lowsnr-sample.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/actin-20x-noise1-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/actin-20x-noise1-highsnr-sample.png" width="200" height="200" /> |
+:-------------------------:|:-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-20x-noise1-lowsnr-sample.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-20x-noise1-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-20x-noise1-highsnr-sample.png" width="200" height="200" /> |
+:-------------------------:|:-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-60x-noise1-lowsnr-sample.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-60x-noise1-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/mito-60x-noise1-highsnr-sample.png" width="200" height="200" /> |
+:-------------------------:|:-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/actin-60x-noise1-lowsnr-sample.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/actin-60x-noise1-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/actin-60x-noise1-highsnr-sample.png" width="200" height="200" /> |
+:-------------------------:|:-------------------------:|:-------------------------:|
 
 Details: 
-Input: 2D single channel image from GigaDB dataset.
+Input: 2D single channel image from GigaDB dataset (Nucleus, membrane, Mitochondria (confocal), Actin (WF), Mitochondria (WF) using 2 different objectives (20x and 60x) respectively ).
 
 ## **Frequently Asked Questions (FAQs)**
 Some of the faq like image conversions, 2D, 3D image denoising, denoising images in a folder using macros, etc..
