@@ -33,9 +33,14 @@ Input Noisy Image          | Noise2Noise Plugin        |
 <img src="Plugins/Model_validation/Out_of_distribution_structures/N2V_dataset/N2v/FA - 0488 Evolve.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/N2V_dataset/N2v/denoised_FA - 0488 Evolve.png" width="225" height="225" /> |
 :-------------------------:|:-------------------------:|
 <img src="Plugins/Model_validation/Out_of_distribution_structures/PN2V_sample_images/20190520_tl_25um_50msec_05pc_488_130EM_Conv0000_crop.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/PN2V_sample_images/denoised_20190520_tl_25um_50msec_05pc_488_130EM_Conv0000_crop.png" width="225" height="225" /> |
+:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/CBMI_dataset/Selected_CBMI_images/low_snr_mito_img7.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/CBMI_dataset/Selected_CBMI_images/denoised_mito_img7.png" width="225" height="225" /> |
+:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/CBMI_dataset/Selected_CBMI_images/low_snr_er_img13.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/CBMI_dataset/Selected_CBMI_images/denoised_er_img13.png" width="225" height="225" /> |
+:-------------------------:|:-------------------------:|
 
 Details: 
-Input: 2D single channel image (from CARE dataset, PN2V dataset). 
+Input: 2D single channel image from CARE dataset, PN2V dataset, CBMI dataset (Mito, ER images). 
 
 
 ## **Frequently Asked Questions (FAQs)**
