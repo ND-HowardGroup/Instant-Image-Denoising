@@ -40,7 +40,7 @@ Input Noisy Image          | Noise2Noise Plugin        |
 :-------------------------:|:-------------------------:|
 
 Details: 
-Input: 2D single channel image from CARE dataset, PN2V dataset, CBMI dataset (Mito, ER images). 
+Input: 2D single channel image from CARE dataset, PN2V Convallaria dataset, CBMI dataset (Mito, ER images). 
 
 
 ## **Frequently Asked Questions (FAQs)**
