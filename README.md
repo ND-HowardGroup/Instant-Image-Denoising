@@ -91,6 +91,10 @@ Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)
 Details: 
 Input: 2D single channel image from GigaDB dataset (Nucleus, membrane, Mitochondria (confocal), Actin (WF), Mitochondria (WF) using 2 different objectives (20x and 60x) respectively ).
 
+# Results of Noise2Noise plugin for datasets: 
+The image denoising dataset size is large to upload to Github that includes the noisy, denoised images are provided in the CurateND folder by University of Notre Dame. [Link](https://curate.nd.edu/show/5h73pv66h5f) 
+
+
 ## **Frequently Asked Questions (FAQs)**
 Some of the faq like image conversions, 2D, 3D image denoising, denoising images in a folder using macros, etc..
 https://github.com/ND-HowardGroup/Instant-Image-Denoising/blob/master/FAQ_Instant_Image_Denoising.docx
