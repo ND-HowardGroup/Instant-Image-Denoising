@@ -26,7 +26,7 @@ Input Noisy Image          | Noise2Void           	   | Noise2Noise Plugin      
 PSNR: 17.93 dB			       | PSNR: 22.29 dB			       | PSNR: 25.44 dB	           | 
 
 
-# Results on the out-of-distribution structures using the Noise2Noise image denoising method: 
+# Results on the out-of-distribution structures using the Noise2Noise plugin image denoising method: 
 
 Input Noisy Image          | Noise2Noise Plugin        |       	  
 :-------------------------:|:-------------------------:|
@@ -41,10 +41,21 @@ Input Noisy Image          | Noise2Noise Plugin        |
 :-------------------------:|:-------------------------:|
 
 Details: 
-Input: 2D single channel image from CARE dataset, PN2V Convallaria dataset, CBMI dataset (Mito, ER images). 
+Input: 2D single channel image from CARE dataset, PN2V Convallaria dataset, CBMI dataset (Mito, ER images).
+
+# Results on the 3D RCAN dataset (includes Actin, ER, Golgi, Lysosome, Matrix-mitochondria, Microtubules and Tomm20-mitochondria samples) using the Noise2Noise plugin image denoising results: 
+Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
+:-------------------------:|:-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/3D_RCAN_dataset_sample_images/small_fov_images/Actin_crop2/noisy_17_decon0027_crop.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/3D_RCAN_dataset_sample_images/small_fov_images/Actin_crop2/denoised_17_decon0027_crop.png" width="200" height="200" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/3D_RCAN_dataset_sample_images/small_fov_images/Actin_crop2/17_decon0027_crop.png" width="200" height="200" /> |
+:-------------------------:|:-------------------------:|:-------------------------:|
 
 
-# Results on the GigaDB dataset (of BPAE samples, membrane structures) using the Noise2Noise image denoising method: 
+
+Details: 
+Input: 2D single channel image from 3D RCAN dataset includes Actin, ER, Golgi, Lysosome, Matrix-mitochondria, Microtubules and Tomm20-mitochondria samples.
+
+# Results on the GigaDB dataset (of BPAE samples, membrane structures) using the Noise2Noise plugin image denoising method: 
 Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
 :-------------------------:|:-------------------------:|:-------------------------:|
 :-------------------------:|:-------------------------:|:-------------------------:|
