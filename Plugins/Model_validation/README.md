@@ -5,7 +5,7 @@ FMD dataset:
 Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
 :-------------------------:|:-------------------------:|:-------------------------:|
 :-------------------------:|:-------------------------:|:-------------------------:|
-<img src="Visualization_Noise2Noise/Visu_FMD_dataset/image_R_1_001.png" width="200" height="200" /> | <img src="Visualization_Noise2Noise/Visu_FMD_dataset/image_R_1_001.png" width="200" height="200" /> | <img src="Visualization_Noise2Noise/Visu_FMD_dataset/image_R_1_avg50.png" width="200" height="200" /> |
+<img src="N2V_Comparison/FMD_dataset/BPAE_R_Channel_noisy_image.png" width="200" height="200" /> | <img src="N2V_Comparison/FMD_dataset/BPAE_R_Channel_denoised_Noise2Noise(Ours).png" width="200" height="200" /> | <img src="N2V_Comparison/FMD_dataset/BPAE_R_Channel_gt_image.png" width="200" height="200" /> |
 :-------------------------:|:-------------------------:|:-------------------------:|
 
 Encoder Layer1 output:
@@ -38,7 +38,7 @@ W2S sample:
 Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
 :-------------------------:|:-------------------------:|:-------------------------:|
 :-------------------------:|:-------------------------:|:-------------------------:|
-<img src="N2V_Comparison/W2S_dataset/W2S_noisy_input_avg1_010_0.png" width="200" height="200" /> | <img src="W2S_denosied_Noise2Noise(Ours)_010_0.png" width="200" height="200" /> | <img src="W2S_target_avg400_010_0.png" width="200" height="200" /> |
+<img src="N2V_Comparison/W2S_dataset/W2S_noisy_input_avg1_010_0.png" width="200" height="200" /> | <img src="N2V_Comparison/W2S_dataset/W2S_denosied_Noise2Noise(Ours)_010_0.png" width="200" height="200" /> | <img src="N2V_Comparison/W2S_dataset/W2S_target_avg400_010_0.png" width="200" height="200" /> |
 :-------------------------:|:-------------------------:|:-------------------------:|
 
 Encoder Layer1 output:
