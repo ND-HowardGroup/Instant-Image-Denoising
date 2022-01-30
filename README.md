@@ -43,7 +43,7 @@ Input Noisy Image          | Noise2Noise Plugin        |
 Details: 
 Input: 2D single channel image from CARE dataset, PN2V Convallaria dataset, CBMI dataset (Mito, ER images).
 
-# Results on the 3D RCAN dataset (includes Actin, ER, Golgi, Lysosome, Matrix-mitochondria, Microtubules and Tomm20-mitochondria samples) using the Noise2Noise plugin image denoising results: 
+# Results on the out-of-distribution structures from the 3D RCAN dataset (includes Actin, ER, Golgi, Lysosome, Matrix-mitochondria, Microtubules and Tomm20-mitochondria samples) using the Noise2Noise plugin image denoising results: 
 Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
 :-------------------------:|:-------------------------:|:-------------------------:|
 :-------------------------:|:-------------------------:|:-------------------------:|
