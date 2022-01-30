@@ -39,9 +39,12 @@ Input Noisy Image          | Noise2Noise Plugin        |
 :-------------------------:|:-------------------------:|
 <img src="Plugins/Model_validation/Out_of_distribution_structures/CBMI_dataset/Selected_CBMI_images/low_snr_er_img13.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/CBMI_dataset/Selected_CBMI_images/denoised_er_img13.png" width="225" height="225" /> |
 :-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/Online_dataset/gain50_1_z0_t0_r0_h0.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/Online_dataset/gain50_1_z0_t0_r0_h0_denoised.png" width="225" height="225" /> |
+:-------------------------:|:-------------------------:|
 
 Details: 
-Input: 2D single channel image from CARE dataset, PN2V Convallaria dataset, CBMI dataset (Mito, ER images).
+Input: 2D single channel image from CARE dataset, PN2V Convallaria dataset, CBMI dataset (Mito, ER images), other online datasets.
 
 # Results on the out-of-distribution structures from the 3D RCAN dataset (includes Actin, ER, Golgi, Lysosome, Matrix-mitochondria, Microtubules and Tomm20-mitochondria samples) using the Noise2Noise plugin image denoising results: 
 Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
