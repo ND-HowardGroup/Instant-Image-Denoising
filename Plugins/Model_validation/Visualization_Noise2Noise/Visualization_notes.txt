@@ -1,0 +1,35 @@
+This folder shows the visualization of the Noise2Noise model for a given noisy input and outputs at the end of each encoder output. 
+Each encoder output: 48 channels of variying sizes 
+Number of encoders: 5
+
+input: 256x256
+Output1: size: 48*128*128
+Output2: size: 48*64*64
+Output3: size: 48*32*32
+Output4: size: 48*16*16
+Output5: size: 48*8*8
+
+Input samples: 
+1. BPAE sample (mitochondira channel) from the confocal microscopy in the FMD dataset
+2. human cell sample from the W2S dataset. 
+
+Output: figures at each encoder layer that shows 48 channels
+
+Observations from our experiments: 
+Output of convolutions shows the visualization and feature extractions from the noisy input sample. 
+Some of the filters convolution provides the only background and some of the filters shows the sample structure. 
+
+Main References: 
+https://machinelearningmastery.com/how-to-visualize-filters-and-feature-maps-in-convolutional-neural-networks/
+https://towardsdatascience.com/understanding-your-convolution-network-with-visualizations-a4883441533b
+
+Other references: 
+Zeiler, Matthew D., and Rob Fergus. "Visualizing and understanding convolutional networks." In European conference on computer vision, pp. 818-833. Springer, Cham, 2014.
+Yosinski, Jason, Jeff Clune, Anh Nguyen, Thomas Fuchs, and Hod Lipson. "Understanding neural networks through deep visualization." arXiv preprint arXiv:1506.06579 (2015).
+
+
+Copyright
+© 2019 Varun Mannam, University of Notre Dame
+
+License
+Licensed under the GPL
