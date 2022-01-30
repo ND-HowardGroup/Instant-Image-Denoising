@@ -1,4 +1,4 @@
-# Instant-Image-Denoising model visualization of Noise2Noise at the various encoder outputs. 
+# Instant-Image-Denoising model visualization of Noise2Noise model various encoder outputs on a sample test image. 
 
 FMD dataset: 
 
