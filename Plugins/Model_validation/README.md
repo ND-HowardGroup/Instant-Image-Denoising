@@ -6,14 +6,34 @@ FMD dataset:
 Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
 :-------------------------:|:-------------------------:|:-------------------------:|
 :-------------------------:|:-------------------------:|:-------------------------:|
-<img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample.png" width="200" height="200" /> | <img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-highsnr-sample.png" width="200" height="200" /> |
+<img src="Visualization_Noise2Noise/Visu_FMD_dataset/image_R_1_001.png.png" width="200" height="200" /> | <img src="Visualization_Noise2Noise/Visu_FMD_dataset/image_R_1_001.png.png" width="200" height="200" /> | <img src="Visualization_Noise2Noise/Visu_FMD_dataset/image_R_1_avg50.png.png" width="200" height="200" /> |
 :-------------------------:|:-------------------------:|:-------------------------:|
 
 
 
-Layer1 output:
+Encoder Layer1 output:
 :---------------------------------------------------------------------------------:|
-<img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample.png" width="400" height="400" />
+<img src="Visualization_Noise2Noise/Visu_FMD_dataset/fmd_l1.png" width="300" height="300" />
+:---------------------------------------------------------------------------------:|
+
+Encoder Layer2 output:
+:---------------------------------------------------------------------------------:|
+<img src="Visualization_Noise2Noise/Visu_FMD_dataset/fmd_l2.png" width="300" height="300" />
+:---------------------------------------------------------------------------------:|
+
+Encoder Layer3 output:
+:---------------------------------------------------------------------------------:|
+<img src="Visualization_Noise2Noise/Visu_FMD_dataset/fmd_l3.png" width="300" height="300" />
+:---------------------------------------------------------------------------------:|
+
+Encoder Layer4 output:
+:---------------------------------------------------------------------------------:|
+<img src="Visualization_Noise2Noise/Visu_FMD_dataset/fmd_l4.png" width="300" height="300" />
+:---------------------------------------------------------------------------------:|
+
+Encoder Layer5 output:
+:---------------------------------------------------------------------------------:|
+<img src="Visualization_Noise2Noise/Visu_FMD_dataset/fmd_l5.png" width="300" height="300" />
 :---------------------------------------------------------------------------------:|
 
 
