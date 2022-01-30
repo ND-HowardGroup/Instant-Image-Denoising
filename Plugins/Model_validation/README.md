@@ -1,30 +1,20 @@
 # Instant-Image-Denoising model visualization of Noise2Noise at the various encoder outputs. 
 
 FMD dataset: 
-:-------------------------:|:-------------------------:|:-------------------------:|
+
+
 Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
 :-------------------------:|:-------------------------:|:-------------------------:|
 :-------------------------:|:-------------------------:|:-------------------------:|
 <img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample.png" width="200" height="200" /> | <img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample_denoised.png" width="200" height="200" /> | <img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-highsnr-sample.png" width="200" height="200" /> |
 :-------------------------:|:-------------------------:|:-------------------------:|
+
+
+
 Layer1 output:
-:-------------------------:|:-------------------------:|:-------------------------:|
-<img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample.png" width="200" height="200" />
-:-------------------------:|:-------------------------:|:-------------------------:|
-
-:-------------------------:|:-------------------------:|:-------------------------:|
-:-------------------------:|:-------------------------:|:-------------------------:|
-
-
-:-------------------------:|:-------------------------:|:-------------------------:|
-:-------------------------:|:-------------------------:|:-------------------------:|
-
-:-------------------------:|:-------------------------:|:-------------------------:|
-:-------------------------:|:-------------------------:|:-------------------------:|
-
-
-:-------------------------:|:-------------------------:|:-------------------------:|
-:-------------------------:|:-------------------------:|:-------------------------:|
+:---------------------------------------------------------------------------------:|
+<img src="Out_of_distribution_structures/GigadB_dataset_sample_images/cropped_images/nucleus-lowsnr-sample.png" width="400" height="400" />
+:---------------------------------------------------------------------------------:|
 
 
 W2S sample:
