@@ -46,6 +46,23 @@ Input Noisy Image          | Noise2Noise Plugin        |
 Details: 
 Input: 2D single channel image from CARE dataset, PN2V Convallaria dataset, CBMI dataset (Mito, ER images), other online datasets.
 
+# Results on the out-of-distribution structures using the Noise2Noise plugin image denoising method (fixed patteren noise examples): 
+
+Input Noisy Image          | Noise2Noise Plugin        |       	  
+:-------------------------:|:-------------------------:|
+:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/HeLa_cells/AVG_TIRF_01_05ms_c2.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/HeLa_cells/AVG_TIRF_01_05ms_denoised_c2.png" width="225" height="225" /> |
+:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/HeLa_cells/AVG_TIRF_01_10ms_c2.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/HeLa_cells/AVG_TIRF_01_10ms_denoised_c2.png" width="225" height="225" /> |
+:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/HeLa_cells/AVG_TIRF_02_05ms_c2.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/HeLa_cells/AVG_TIRF_02_05ms_denoised_c2.png" width="225" height="225" /> |
+:-------------------------:|:-------------------------:|
+<img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/HeLa_cells/AVG_TIRF_02_10ms_c2.png" width="225" height="225" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/HeLa_cells/AVG_TIRF_02_10ms_denoised_c2.png" width="225" height="225" /> |
+:-------------------------:|:-------------------------:|
+
+Details: 
+Input: 2D single channel image from ACsN dataset of HeLa cell microtubules at different exposure time (5ms, 10ms) noisy and denoised results. 
+
 # Results on the out-of-distribution structures from the 3D RCAN dataset (includes Actin, ER, Golgi, Lysosome, Matrix-mitochondria, Microtubules and Tomm20-mitochondria samples) using the Noise2Noise plugin image denoising results: 
 Input Noisy Image          | Noise2Noise Plugin        | High SNR (ground truth)   |       	  
 :-------------------------:|:-------------------------:|:-------------------------:|
