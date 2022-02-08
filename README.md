@@ -64,13 +64,14 @@ Details:
 Input: 2D single channel image from ACsN dataset of HeLa cell microtubules at different exposure time (5ms, 10ms) noisy and denoised results. 
 
 # Results on the out-of-distribution structures using the Noise2Noise plugin image denoising method included ground truth (fixed patteren noise examples): 
-:-------------------------:|:-------------------------:|:-------------------------:|
+
 Input Noisy Image          | Noise2Noise Plugin        | Target Image 		         |	
+:-------------------------:|:-------------------------:|:-------------------------:|
 :-------------------------:|:-------------------------:|:-------------------------:|
 <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/Microtubules_with_GT/noisy_test3.png" width="175" height="175" />   | <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/Microtubules_with_GT/denoised_test3.png" width="175" height="175" />| <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/Microtubules_with_GT/clean_test1.png" width="175" height="175" /> |
 :-------------------------:|:-------------------------:|:-------------------------:|
 <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/Microtubules_with_GT/crop_images/noisy_test3.png" width="175" height="175" /> | <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/Microtubules_with_GT/crop_images/denoised_test3.png" width="175" height="175" />| <img src="Plugins/Model_validation/Out_of_distribution_structures/ACsN_dataset_sample_images/Microtubules_with_GT/crop_images/clean_test1.png" width="175" height="175" /> |
-:-------------------------:|:-------------------------:|:-------------------------:|
+
 Details: 
 Input: 2D single channel image from ACsN dataset of HeLa cell microtubules at exposure time (10ms) noisy, denoised results and target images (110 ms).
 
