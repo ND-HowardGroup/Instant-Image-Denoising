@@ -1,3 +1,7 @@
+# Installation
+Simple Instructions []
+
+
 # Instant-Image-Denoising
 This repository includes the code used for the image denoising of our Noise2Noise and DnCNN ML models trained on the FMD dataset microscopy images. This repository also includes the ImageJ plugin (contains pre-trained ML model and computationally much faster with GPU configuration) for image denoising on the 2D and 3D data. 
 
