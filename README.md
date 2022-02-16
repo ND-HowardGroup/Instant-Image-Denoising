@@ -1,5 +1,5 @@
 # Installation
-(Simple Instructions)[https://github.com/ND-HowardGroup/Instant-Image-Denoising/blob/master/Plugins/Instructions_to_Install_Image_denoising_plugins.docx]
+Simple Instructions [https://github.com/ND-HowardGroup/Instant-Image-Denoising/blob/master/Plugins/Instructions_to_Install_Image_denoising_plugins.docx]
 
 
 # Instant-Image-Denoising
